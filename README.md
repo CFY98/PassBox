@@ -33,13 +33,13 @@ git clone https://github.com/CFY98/PassBox.git
 2. Navigate to the project folder:
 
 ```
-cd Password
+cd PassBox
 ```
 
 3. Run the password script:
 
 ```
-python password.py
+python main.py
 ```
 
 🔹 The script will perform its encryption routine with user input as defined in the code.
