@@ -1,0 +1,5 @@
+.zed/
+venv3.13/
+__pycache__/
+vault.json
+credentials.csv
