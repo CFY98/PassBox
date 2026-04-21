@@ -98,6 +98,7 @@ class Auth:
                 df.at[i, "password"] = encryption(password)
                 break
         df.to_csv("credentials.csv", index=False)
+        self.credentials[username]["password"] = password
 
     def update_hint(self, username):
         to_update = input("Update memorable hint (Yes/No)? ").casefold().strip()
@@ -110,6 +111,7 @@ class Auth:
                 df.at[i, "hint"] = encryption(new_hint)
                 break
         df.to_csv("credentials.csv", index=False)
+        self.credentials[username]["hint"] = new_hint
         return True
 
     def change_password(self, username, password):

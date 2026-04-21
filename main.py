@@ -1,8 +1,11 @@
+# EXTERNAL IMPORTS
 import pwinput
 
+# PASSBOX MODULES
 from auth import Auth
 
 
+# MAIN FUNCTION
 def main():
     max_attempts = 6
     failures = 0
