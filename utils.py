@@ -1,6 +1,8 @@
 import random
 import string
 
+import pandas as pd
+
 
 def valid_password(password):
     numbers = sum(c.isnumeric() for c in password)
@@ -26,3 +28,9 @@ def strong_password(length=15):
     random.shuffle(characters)
 
     return "".join(characters)
+
+
+def update_password(username, update):
+    df = pd.read_csv("credentials.csv")
+    df.loc[df["username"] == username, "password"] = update
+    df.to_csv("credentials.csv", index=False)
