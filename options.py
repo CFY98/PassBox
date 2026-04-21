@@ -88,20 +88,20 @@ def delete_entry():
 
 
 def search_vault():
-    seek_entry = input("Please type the name of the entry here: ")
+    seek_entry = input("Search: ")
+    print()
     
     storage = vault()
     
-    pattern = re.compile(seek_entry,re.IGNORECASE)
-    
     for key, creds in storage.items():
-        domain_key = hash_domain(key)
+        domain_key = decryption(creds["domain"])
         
-        if seek_entry in domain_key:
-            print("Found:")
-            print("Site:", decryption(creds["domain"]))
+        if re.search(seek_entry, domain_key, re.IGNORECASE):
+            print("Found:\n")
+            print("Site:", domain_key)
             print("Username:", decryption(creds["username"]))
             print("Password:", decryption(creds["password"]))
+            print("-" * 20)
             return
 
     print("Entry not found")
