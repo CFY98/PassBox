@@ -8,8 +8,8 @@ import pandas as pd
 import pwinput
 
 # PASSBOX MODULES
-from vault import decryption, encryption, generate_key, vault
-
+from utils import decryption, encryption, generate_key
+from main import interface
 
 # AUTH START
 class Auth:
@@ -36,7 +36,7 @@ class Auth:
             return "Login details not found"
         if self.credentials[username]["password"] != password:
             return "Incorrect password, please try again"
-        return vault()
+        return True
 
     def get_hint(self, username):
         if username in self.credentials:

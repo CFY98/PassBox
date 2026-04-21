@@ -1,49 +1,15 @@
-# EXTERNAL IMPORTS
-import pwinput
-
 # PASSBOX MODULES
-from auth import Auth
+from options import options_map
 
+def interface():
+    menu = ["Add an Entry", "View Entries", "Update Entry", "Delete Entry", "Search"]
+    print("What would you like to do?\n")
+    print("\n".join(menu))
+    print()
 
-# MAIN FUNCTION
-def main():
-    max_attempts = 6
-    failures = 0
-
-    auth = Auth()
-    username = input("Please enter your username: ").strip()
-
-    while failures < max_attempts:
-        password = pwinput.pwinput("Please enter your password: ").strip()
-        login = auth.login(username, password)
-
-        if login == "Login details not found":
-            register = input(
-                "Login details not found. Would you like to register (Yes/No)? "
-            )
-            if register.lower() == "yes":
-                hint = input("Please enter a memorable hint: ")
-                return auth.register(username, password, hint)
-            else:
-                break
-
-        elif login == "Incorrect password, please try again":
-            failures += 1
-            attempts_left = max_attempts - failures
-            if attempts_left > 0:
-                print(f"Please try again. Attempts left: {attempts_left}".upper())
-                if 2 <= failures:
-                    print(auth.get_hint(username))
-                if failures >= 4:
-                    new_password = auth.change_password(username, password)
-                    if new_password != password:
-                        password = new_password
-            else:
-                print("Incorrect password, no attempts left.")
-                break
-        else:
-            return login
-
-
-if __name__ == "__main__":
-    main()
+    prompt = input("Answer: ").strip().casefold()
+    try:
+        if prompt in options_map:
+            options_map[prompt]()
+    except KeyError:
+        print("Please refer to list of options")

@@ -1,3 +1,4 @@
+import hashlib
 import json
 import os
 
@@ -25,6 +26,10 @@ def decryption(value):
     return cipher.decrypt(value.encode("utf-8")).decode("utf-8")
 
 
+def hash_domain(domain):
+    return hashlib.sha256(domain.encode()).hexdigest()
+
+
 def new_vault():
     with open("vault.json", "w") as f:
         json.dump({}, f)
@@ -33,7 +38,10 @@ def new_vault():
 def vault():
     if os.path.exists("vault.json"):
         with open("vault.json", "r") as f:
-            return json.load(f)
+            try:
+                return json.load(f)
+            except json.JSONDecodeError:
+                return {}
     else:
         new_vault()
         return {}
