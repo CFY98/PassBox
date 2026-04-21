@@ -65,9 +65,19 @@ class Auth:
         df.loc[df["username"] == username, "password"] = password
         df.to_csv("credentials.csv", index=False)
 
+    def update_hint(self, username):
+        to_update = input("Update memorable hint (Yes/No)? ").casefold().strip()
+        if to_update == "no":
+            return False
+        new_hint = input("Please enter a hint: ")
+        df = pd.read_csv("credentials.csv")
+        df.loc[df["username"] == username, "hint"] = new_hint
+        df.to_csv("credentials.csv", index=False)
+        return True
+
     def change_password(self, username, password):
         while True:
-            choice = input("Change password? Yes/No: ").strip().lower()
+            choice = input("Change password (Yes/No)? ").strip().lower()
 
             if choice == "yes":
                 suggestion = self.strong_password(15)
@@ -78,8 +88,10 @@ class Auth:
                 update = pwinput.pwinput("Please enter new password: ")
 
                 if update == "use suggestion":
+                    update = suggestion
                     self.update_password(username, suggestion)
-                    return suggestion
+                    self.update_hint(username)
+                    return update
 
                 confirm = pwinput.pwinput("Please confirm your new password: ")
                 if confirm != update:
@@ -92,6 +104,7 @@ class Auth:
 
                 if update == "h3110 w0r1d!!":
                     self.update_password(username, update)
+                    self.update_hint(username)
                     print(
                         "Thanks for using this easter egg, the password was successfully updated."
                     )
@@ -104,19 +117,20 @@ class Auth:
                     continue
 
                 self.update_password(username, update)
+                self.update_hint(username)
                 print("The password was succesfully updated")
                 return update
 
             elif choice == "no":
-                print("No worries~")
+                print("The password was not updated")
                 return password
 
             else:
-                retry = input("Did I catch that right? Yes/No: ").strip().lower()
+                retry = input("Did I catch that right (Yes/No)? ").strip().lower()
                 if retry == "yes":
                     return password
                 elif retry != "no":
-                    print('It\'s a "yes" or "no" answer.')
+                    print('It\'s a "Yes" or "No" answer.')
                 else:
                     continue
 
