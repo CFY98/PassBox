@@ -1,6 +1,7 @@
 # EXTERNAL IMPORTS
 import json
 import os
+import hashlib
 
 from cryptography.fernet import Fernet
 
@@ -24,6 +25,10 @@ def decryption(value):
         key = f.read()
     cipher = Fernet(key)
     return cipher.decrypt(value.encode("utf-8")).decode("utf-8")
+
+def hash_domain(domain: str) -> str:
+    domain = domain.strip().lower()
+    return hashlib.sha256(domain.encode("utf-8")).hexdigest()
 
 # VAULT FUNCTIONS
 def new_vault():

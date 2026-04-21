@@ -3,7 +3,7 @@ import json
 import re
 
 # PASSBOX IMPORTS
-from utils import decryption, encryption, vault
+from utils import decryption, encryption, vault, hash_domain
 
 # OPTIONS
 def edit_vault(value):
@@ -16,7 +16,7 @@ def add_entry():
     domain_name = input("Please enter the username/email: ")
     domain_password = input("Please enter the password: ")
 
-    hash_key = encryption(domain)
+    hash_key = hash_domain(domain)
 
     data = vault()
     if hash_key in data:
@@ -28,7 +28,8 @@ def add_entry():
 
     data.update(
         {
-            hash_key: {
+            hash_domain(domain): {
+                "domain": encryption(domain),
                 "username": encryption(domain_name),
                 "password": encryption(domain_password),
             }
@@ -40,9 +41,11 @@ def add_entry():
 
 def view_entries():
     unlock = vault()
+    if not unlock:
+        print("Vault is empty\n")
 
     for domain, creds in unlock.items():
-        print("Site:", decryption(domain))
+        print("Site:", decryption(creds["domain"]))
         print("Username:", decryption(creds["username"]))
         print("Password:", decryption(creds["password"]))
         print("-" * 20)
@@ -52,12 +55,15 @@ def update_entry():
     choice = input("Please enter the name of the entry you want to update: ")
     new_name = input("Please enter the new username/email: ")
     new_password = input("Please enter the new password: ")
-
+    
+    hash_choice = hash_domain(choice)
     entries = vault()
-
+    
+    entries.pop(hash_choice)
     entries.update(
         {
-            encryption(choice): {
+            hash_choice: {
+                "domain": encryption(choice),
                 "username": encryption(new_name),
                 "password": encryption(new_password),
             }
@@ -72,9 +78,9 @@ def delete_entry():
 
     target = vault()
 
-    dec_delete = decryption(delete)
+    hash_delete = hash_domain(delete)
 
-    if dec_delete in target:
+    if hash_delete in target:
         target.pop(hash_delete)
         edit_vault(target)
     else:
@@ -89,11 +95,11 @@ def search_vault():
     pattern = re.compile(seek_entry,re.IGNORECASE)
     
     for key, creds in storage.items():
-        domain = decryption(key)
+        domain_key = hash_domain(key)
         
-        if seek_entry in domain:
+        if seek_entry in domain_key:
             print("Found:")
-            print("Site:", decryption(domain))
+            print("Site:", decryption(creds["domain"]))
             print("Username:", decryption(creds["username"]))
             print("Password:", decryption(creds["password"]))
             return
