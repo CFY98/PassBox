@@ -124,17 +124,12 @@ class Auth:
                     f'Here is a suggestion: {suggestion}\nIf you want to use it, type "use suggestion".\n',
                     end="",
                 )
-                update = pwinput.pwinput("Please enter new password: ")
 
+                update = pwinput.pwinput("Please enter new password: ")
                 if update == "use suggestion":
                     self.update_password(username, suggestion)
                     self.update_hint(username)
                     return suggestion
-
-                confirm = pwinput.pwinput("Please confirm your new password: ")
-                if confirm != update:
-                    print("Passwords do not match. Try again.")
-                    continue
 
                 if update == password:
                     print("Cannot be old password, please try again.")
@@ -152,6 +147,11 @@ class Auth:
                     print(
                         "Password must be between 5-15 characters long, with a minimum of 2 letters, numbers and symbols."
                     )
+                    continue
+
+                confirm = pwinput.pwinput("Please confirm your new password: ")
+                if confirm != update:
+                    print("Passwords do not match. Try again.")
                     continue
 
                 self.update_password(username, update)
