@@ -1,9 +1,11 @@
 import csv
 import os
+import random
+import string
 
+import pandas as pd
 import pwinput
 
-from utils import strong_password, update_password, valid_password
 from vault import encryption, vault
 
 
@@ -29,12 +31,46 @@ class Auth:
             return "Incorrect password, please try again"
         return vault()
 
+    def valid_password(self, password):
+        numbers = sum(c.isnumeric() for c in password)
+        letters = sum(c.isalpha() for c in password)
+        symbols = sum(c in string.punctuation for c in password)
+
+        return (
+            numbers >= 2
+            and letters >= 2
+            and symbols >= 2
+            and (5 <= len(password) <= 15)
+        )
+
+    def strong_password(self, length=15):
+        if length < 5:
+            raise ValueError("Password must be at least 5 characters long.")
+
+        letters = random.choices(string.ascii_letters, k=2)
+        numbers = random.choices(string.digits, k=2)
+        symbols = random.choices(string.punctuation, k=2)
+
+        total = length - 6
+        valid_password = string.ascii_letters + string.digits + string.punctuation
+        filler = random.choices(valid_password, k=total)
+
+        characters = letters + numbers + symbols + filler
+        random.shuffle(characters)
+
+        return "".join(characters)
+
+    def update_password(self, username, password):
+        df = pd.read_csv("credentials.csv")
+        df.loc[df["username"] == username, "password"] = password
+        df.to_csv("credentials.csv", index=False)
+
     def change_password(self, username, password):
         while True:
             choice = input("Change password? Yes/No: ").strip().lower()
 
             if choice == "yes":
-                suggestion = strong_password(15)
+                suggestion = self.strong_password(15)
                 print(
                     f'Here is a suggestion: {suggestion}\nIf you want to use it, type "use suggestion".\n',
                     end="",
@@ -42,7 +78,7 @@ class Auth:
                 update = pwinput.pwinput("Please enter new password: ")
 
                 if update == "use suggestion":
-                    update_password(username, suggestion)
+                    self.update_password(username, suggestion)
                     return suggestion
 
                 confirm = pwinput.pwinput("Please confirm your new password: ")
@@ -55,19 +91,19 @@ class Auth:
                     continue
 
                 if update == "h3110 w0r1d!!":
-                    update_password(username, update)
+                    self.update_password(username, update)
                     print(
                         "Thanks for using this easter egg, the password was successfully updated."
                     )
                     return update
 
-                if not valid_password(update):
+                if not self.valid_password(update):
                     print(
                         "Password must be between 5-15 characters long, with a minimum of 2 letters, numbers and symbols."
                     )
                     continue
 
-                update_password(username, update)
+                self.update_password(username, update)
                 print("The password was succesfully updated")
                 return update
 
