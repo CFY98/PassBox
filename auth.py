@@ -1,3 +1,4 @@
+# EXTERNAL MODULES
 import csv
 import os
 import random
@@ -6,11 +7,14 @@ import string
 import pandas as pd
 import pwinput
 
-from vault import encryption, vault
+# PASSBOX MODULES
+from vault import decryption, encryption, generate_key, vault
 
 
+# AUTH START
 class Auth:
     def __init__(self):
+        generate_key()
         self.credentials = {}
         if not os.path.exists("credentials.csv"):
             with open("credentials.csv", "w", newline="") as master_password:
@@ -22,14 +26,41 @@ class Auth:
         with open("credentials.csv", "r", newline="") as master_password:
             reader = csv.DictReader(master_password)
             for row in reader:
-                self.credentials[row["username"]] = row["password"]
+                self.credentials[decryption(row["username"])] = {
+                    "password": decryption(row["password"]),
+                    "hint": decryption(row["hint"]),
+                }
 
     def login(self, username, password):
         if username not in self.credentials.keys():
             return "Login details not found"
-        elif self.credentials[username] != password:
+        if self.credentials[username]["password"] != password:
             return "Incorrect password, please try again"
         return vault()
+
+    def get_hint(self, username):
+        if username in self.credentials:
+            return f"Hint: {self.credentials[username]['hint'].strip()}"
+
+    def register(self, username, password, hint):
+        if username in self.credentials:
+            print("Username already exists.")
+            return False
+        with open("credentials.csv", "a", newline="") as master_password:
+            writer = csv.DictWriter(
+                master_password, fieldnames=["username", "password", "hint"]
+            )
+            writer.writerow(
+                {
+                    "username": encryption(username),
+                    "password": encryption(password),
+                    "hint": encryption(hint),
+                }
+            )
+            return True
+
+    def logout(self):
+        self.credentials = {}
 
     def valid_password(self, password):
         numbers = sum(c.isnumeric() for c in password)
@@ -62,7 +93,10 @@ class Auth:
 
     def update_password(self, username, password):
         df = pd.read_csv("credentials.csv")
-        df.loc[df["username"] == username, "password"] = password
+        for i, row in df.iterrows():
+            if decryption(row["username"]) == username:
+                df.at[i, "password"] = encryption(password)
+                break
         df.to_csv("credentials.csv", index=False)
 
     def update_hint(self, username):
@@ -71,7 +105,10 @@ class Auth:
             return False
         new_hint = input("Please enter a hint: ")
         df = pd.read_csv("credentials.csv")
-        df.loc[df["username"] == username, "hint"] = new_hint
+        for i, row in df.iterrows():
+            if decryption(row["username"]) == username:
+                df.at[i, "hint"] = encryption(new_hint)
+                break
         df.to_csv("credentials.csv", index=False)
         return True
 
@@ -88,10 +125,9 @@ class Auth:
                 update = pwinput.pwinput("Please enter new password: ")
 
                 if update == "use suggestion":
-                    update = suggestion
                     self.update_password(username, suggestion)
                     self.update_hint(username)
-                    return update
+                    return suggestion
 
                 confirm = pwinput.pwinput("Please confirm your new password: ")
                 if confirm != update:
@@ -133,17 +169,3 @@ class Auth:
                     print('It\'s a "Yes" or "No" answer.')
                 else:
                     continue
-
-    def register(self, username, password, hint):
-        if username in self.credentials:
-            print("Username already exists.")
-            return False
-        with open("credentials.csv", "a", newline="") as master_password:
-            writer = csv.DictWriter(
-                master_password, fieldnames=["username", "password", "hint"]
-            )
-            writer.writerow({"username": username, "password": password, "hint": hint})
-            return True
-
-    def logout(self):
-        self.credentials = {}

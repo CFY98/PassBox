@@ -1,33 +1,24 @@
-import csv
-
 import pwinput
 
 from auth import Auth
 
 
-def get_hint(username):
-    with open("credentials.csv", "r") as f:
-        hint = csv.DictReader(f)
-        for row in hint:
-            if row["username"] == username:
-                return f"Hint: {(row['hint'].strip())}"
-
-
 def main():
-    max_attempts = 5
+    max_attempts = 6
     failures = 0
 
+    auth = Auth()
     username = input("Please enter your username: ").strip()
+
     while failures < max_attempts:
-        auth = Auth()
         password = pwinput.pwinput("Please enter your password: ").strip()
         login = auth.login(username, password)
 
         if login == "Login details not found":
             register = input(
-                "Login details not found. Would you like to register? (y/n): "
+                "Login details not found. Would you like to register (Yes/No)? "
             )
-            if register.lower() == "y":
+            if register.lower() == "yes":
                 hint = input("Please enter a memorable hint: ")
                 return auth.register(username, password, hint)
             else:
@@ -39,7 +30,7 @@ def main():
             if attempts_left > 0:
                 print(f"Please try again. Attempts left: {attempts_left}".upper())
                 if 2 <= failures:
-                    print(get_hint(username))
+                    print(auth.get_hint(username))
                 if failures >= 4:
                     new_password = auth.change_password(username, password)
                     if new_password != password:

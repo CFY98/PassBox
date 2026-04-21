@@ -4,24 +4,25 @@ import os
 from cryptography.fernet import Fernet
 
 
-def encryption(password):
-    key = Fernet.generate_key()
-    cipher = Fernet(key)
-
-    enc_password = cipher.encrypt(password.encode("utf-8"))
-
-    with open("key.key", "wb") as f:
-        f.write(key)
-
-    return enc_password
+def generate_key():
+    if not os.path.exists("key.key"):
+        key = Fernet.generate_key()
+        with open("key.key", "wb") as f:
+            f.write(key)
 
 
-def decryption(enc_password):
+def encryption(value):
     with open("key.key", "rb") as f:
         key = f.read()
     cipher = Fernet(key)
-    dec_password = cipher.decrypt(enc_password).decode("utf-8")
-    return dec_password
+    return cipher.encrypt(value.encode("utf-8")).decode("utf-8")
+
+
+def decryption(value):
+    with open("key.key", "rb") as f:
+        key = f.read()
+    cipher = Fernet(key)
+    return cipher.decrypt(value.encode("utf-8")).decode("utf-8")
 
 
 def new_vault():
