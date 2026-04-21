@@ -9,9 +9,8 @@ import pwinput
 
 # PASSBOX MODULES
 from utils import decryption, encryption, generate_key
-from main import interface
 
-# AUTH START
+# AUTH CLASS
 class Auth:
     def __init__(self):
         generate_key()

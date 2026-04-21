@@ -1,10 +1,10 @@
-import hashlib
+# EXTERNAL IMPORTS
 import json
 import os
 
 from cryptography.fernet import Fernet
 
-
+# ENCRYPTION FUNCTIONS
 def generate_key():
     if not os.path.exists("key.key"):
         key = Fernet.generate_key()
@@ -25,11 +25,7 @@ def decryption(value):
     cipher = Fernet(key)
     return cipher.decrypt(value.encode("utf-8")).decode("utf-8")
 
-
-def hash_domain(domain):
-    return hashlib.sha256(domain.encode()).hexdigest()
-
-
+# VAULT FUNCTIONS
 def new_vault():
     with open("vault.json", "w") as f:
         json.dump({}, f)

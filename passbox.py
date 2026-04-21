@@ -3,9 +3,9 @@ import pwinput
 
 # PASSBOX MODULES
 from auth import Auth
-from main import interface
+from main import passbox    
 
-# MAIN FUNCTION
+# LOGIN DAEMON
 def main():
     max_attempts = 6
     failures = 0
@@ -42,8 +42,8 @@ def main():
                 print("Incorrect password, no attempts left.")
                 break
         else:
-            interface()
-
+            passbox(auth)
+            return
 
 if __name__ == "__main__":
     main()

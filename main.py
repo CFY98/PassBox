@@ -1,15 +1,23 @@
 # PASSBOX MODULES
 from options import options_map
 
-def interface():
-    menu = ["Add an Entry", "View Entries", "Update Entry", "Delete Entry", "Search"]
+# PASSBOX INTERFACE
+def passbox(auth):
+    menu = {"1": "Add an Entry", "2": "View Entries", "3": "Update Entry", "4": "Delete Entry", "5": "Search", "6": "Log Out"}
     print("What would you like to do?\n")
-    print("\n".join(menu))
+    for key, value in menu.items():
+        print(f"{key}: {value}")
     print()
 
-    prompt = input("Answer: ").strip().casefold()
+    prompt = input("Answer: ").strip()
+    print()
     try:
+        if prompt == "6":
+            auth.logout()
+            return
         if prompt in options_map:
             options_map[prompt]()
     except KeyError:
         print("Please refer to list of options")
+
+

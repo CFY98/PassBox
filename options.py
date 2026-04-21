@@ -1,9 +1,11 @@
+# EXTERNAL IMPORTS
 import json
 import re
 
-from utils import decryption, encryption, hash_domain, vault
+# PASSBOX IMPORTS
+from utils import decryption, encryption, vault
 
-
+# OPTIONS
 def edit_vault(value):
     with open("vault.json", "w") as f:
         json.dump(value, f, indent=4)
@@ -14,7 +16,7 @@ def add_entry():
     domain_name = input("Please enter the username/email: ")
     domain_password = input("Please enter the password: ")
 
-    hash_key = hash_domain(domain)
+    hash_key = encryption(domain)
 
     data = vault()
     if hash_key in data:
@@ -40,7 +42,7 @@ def view_entries():
     unlock = vault()
 
     for domain, creds in unlock.items():
-        print("Site:", domain)
+        print("Site:", decryption(domain))
         print("Username:", decryption(creds["username"]))
         print("Password:", decryption(creds["password"]))
         print("-" * 20)
@@ -55,7 +57,7 @@ def update_entry():
 
     entries.update(
         {
-            hash_domain(choice): {
+            encryption(choice): {
                 "username": encryption(new_name),
                 "password": encryption(new_password),
             }
@@ -70,9 +72,9 @@ def delete_entry():
 
     target = vault()
 
-    hash_delete = hash_domain(delete)
+    dec_delete = decryption(delete)
 
-    if hash_delete in target:
+    if dec_delete in target:
         target.pop(hash_delete)
         edit_vault(target)
     else:
@@ -91,17 +93,18 @@ def search_vault():
         
         if seek_entry in domain:
             print("Found:")
-            print("Site:", domain)
+            print("Site:", decryption(domain))
             print("Username:", decryption(creds["username"]))
             print("Password:", decryption(creds["password"]))
             return
 
     print("Entry not found")
 
+# FUNCTION MAP
 options_map = {
-        "add entry": add_entry,
-        "view entries": view_entries,
-        "update entry": update_entry,
-        "delete entry": delete_entry,
-        "search": search_vault,
+        "1": add_entry,
+        "2": view_entries,
+        "3": update_entry,
+        "4": delete_entry,
+        "5": search_vault,
         }
