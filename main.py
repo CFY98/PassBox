@@ -4,12 +4,12 @@ from options import options_map
 # PASSBOX INTERFACE
 def menu():
     menu = {"1": "Add an Entry", "2": "View Entries", "3": "Update Entry", "4": "Delete Entry", "5": "Search", "6": "Log Out"}
-    print("\n---------- MAIN MENU ----------\n")
+    print("\n-------- MAIN MENU --------\n")
     for key, value in menu.items():
         print(f"{key}: {value}")
     print()
 
-def passbox(auth):
+def main(auth, vault_key):
     while True:
         menu()
         prompt = input("Answer: ").strip()
@@ -18,9 +18,9 @@ def passbox(auth):
             if prompt == "6":
                 auth.logout()
                 break
-            if prompt in options_map:
-                options_map[prompt](auth)
+            options_map[prompt](auth, vault_key)
         except KeyError:
             print("Please refer to list of options")
 
-
+if __name__ == "__main__":
+    print("Module not meant to be run directly")

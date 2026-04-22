@@ -3,10 +3,10 @@ import pwinput
 
 # PASSBOX MODULES
 from auth import Auth
-from main import passbox    
+from main import main   
 
 # LOGIN DAEMON
-def main():
+def passbox():
     max_attempts = 6
     failures = 0
 
@@ -15,35 +15,37 @@ def main():
 
     while failures < max_attempts:
         password = pwinput.pwinput("Please enter your password: ").strip()
-        login = auth.login(username, password)
+        status, vault_key = auth.login(username, password)
 
-        if login == "Login details not found":
+        if status == "User not found":
             register = input(
-                "Login details not found. Would you like to register (Yes/No)? "
-            )
-            if register.lower() == "yes":
+                "User not found. Would you like to register (Yes/No)? "
+            ).strip().casefold()
+            if register == "yes":
                 hint = input("Please enter a memorable hint: ")
-                return auth.register(username, password, hint)
-            else:
-                break
+                if auth.register(username, password, hint):
+                    login = auth.login(username, password)
+                    main(auth, vault_key)
+            return
 
-        elif login == "Incorrect password, please try again":
+        elif status == "Incorrect password, please try again":
             failures += 1
             attempts_left = max_attempts - failures
             if attempts_left > 0:
                 print(f"Please try again. Attempts left: {attempts_left}".upper())
-                if 2 <= failures:
-                    print(auth.get_hint(username))
+                if failures >= 2:
+                    hint_key = auth.derive_creds(password)
+                    print(auth.get_hint(username, hint_key))
                 if failures >= 4:
                     new_password = auth.change_password(username, password)
                     if new_password != password:
                         password = new_password
             else:
                 print("Incorrect password, no attempts left.")
-                break
+                return
         else:
-            passbox(auth)
+            main(auth, vault_key)
             return
 
 if __name__ == "__main__":
-    main()
+    passbox()

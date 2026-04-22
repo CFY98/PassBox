@@ -4,14 +4,12 @@ import re
 
 # PASSBOX IMPORTS
 from config import VAULT
-from security import decryption, encryption, vault, hash_domain
+from security import decryption, encryption, hash_domain
+from vault import vault
 
 # CONTINUE LOGIC
 def keep_going(auth=None):
-    stay = input("\nReturn to Main Menu (Yes/No)? ").strip().casefold()
-    if stay == "yes":
-        return False
-    return True
+    return input("\nReturn to Main Menu (Yes/No)? ").strip().casefold() == "yes"
 
 # PASSWORD SUGGESTER
 def get_password(auth):
@@ -33,7 +31,7 @@ def json_edit(value):
         json.dump(value, f, indent=4)
 
 # OPTIONS
-def add_entry(auth=None):
+def add_entry(auth=None, vault_key=None):
     while True:
         domain = input("Please add the name of the site: ")
         domain_name = input("Please enter the username/email: ")
@@ -51,35 +49,36 @@ def add_entry(auth=None):
 
         data.update(
             {
-                hash_domain(domain): {
-                    "domain": encryption(domain),
-                    "username": encryption(domain_name),
-                    "password": encryption(domain_password),
+                hash_key: {
+                    "domain": encryption(domain, vault_key),
+                    "username": encryption(domain_name, vault_key),
+                    "password": encryption(domain_password, vault_key),
                 }
             }
         )
 
         json_edit(data)
         
-        if not keep_going(auth):
+        if keep_going(auth):
             break
 
-def view_entries(auth=None):
+def view_entries(auth=None, vault_key=None):
     while True:
         unlock = vault()
         if not unlock:
             print("Vault is empty\n")
-
-        for domain, creds in unlock.items():
-            print("Site:", decryption(creds["domain"]))
-            print("Username:", decryption(creds["username"]))
-            print("Password:", decryption(creds["password"]))
-            print("-" * 29)
-
-        if not keep_going(auth):
             break
 
-def update_entry(auth=None):
+        for domain, creds in unlock.items():
+            print("Site:", decryption(creds["domain"], vault_key))
+            print("Username:", decryption(creds["username"], vault_key))
+            print("Password:", decryption(creds["password"], vault_key))
+            print("-" * 29)
+
+        if keep_going(auth):
+            break
+
+def update_entry(auth=None, vault_key=None):
     while True:
         choice = input("Please enter the name of the entry you want to update: ")
         new_name = input("Please enter the new username/email: ")
@@ -87,24 +86,28 @@ def update_entry(auth=None):
 
         hash_choice = hash_domain(choice)
         entries = vault()
-    
+        
+        if hash_choice not in entries:
+            print("Entry not found")
+            if keep_going(auth):
+                break
         entries.pop(hash_choice)
         entries.update(
             {
                 hash_choice: {
-                    "domain": encryption(choice),
-                    "username": encryption(new_name),
-                    "password": encryption(new_password),
+                    "domain": encryption(choice, vault_key),
+                    "username": encryption(new_name, vault_key),
+                    "password": encryption(new_password, vault_key),
                 }
             }
         )
 
         json_edit(entries)
         
-        if not keep_going(auth):
+        if keep_going(auth):
             break
 
-def delete_entry(auth=None):
+def delete_entry(auth=None, vault_key=None):
     while True:
         delete = input("Please enter the name of the entry you want to delete: ")
 
@@ -119,32 +122,32 @@ def delete_entry(auth=None):
         else:
             print("Entry not found")
         
-        if not keep_going(auth):
+        if keep_going(auth):
             break
 
-def search_vault(auth=None):
+def search_vault(auth=None, vault_key=None):
     while True:
-        seek_entry = input("Search: ").strip().casefold()
+        seek_entry = input("Search: ").strip()
         print()
     
         storage = vault()
         found = False
         
         for key, creds in storage.items():
-            domain_key = decryption(creds["domain"])
+            domain_key = decryption(creds["domain"], vault_key)
         
             if re.search(seek_entry, domain_key, re.IGNORECASE):
                 print("---------- RESULTS ----------\n")
                 print("Site:", domain_key)
-                print("Username:", decryption(creds["username"]))
-                print("Password:", decryption(creds["password"]))
+                print("Username:", decryption(creds["username"], vault_key))
+                print("Password:", decryption(creds["password"], vault_key))
                 print("-" * 29)
                 found = True
 
         if not found:
             print("Entry not found")
 
-        if not keep_going(auth):
+        if keep_going(auth):
             break
 
 # FUNCTION MAP

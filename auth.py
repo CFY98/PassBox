@@ -3,18 +3,17 @@ import csv
 import os
 import random
 import string
-
 import pandas as pd
 import pwinput
 
 # PASSBOX MODULES
-from security import decryption, encryption, generate_key
+from security import (derive_creds, derive_vault, decryption, encryption, generate_salt, hash_password, verify_password)
 from config import CREDENTIALS
 
 # AUTH CLASS
 class Auth:
     def __init__(self):
-        generate_key()
+        generate_salt(CREDENTIALS)
         self.credentials = {}
         if not CREDENTIALS.exists():
             with open(CREDENTIALS, "w", newline="") as master_password:
@@ -26,38 +25,51 @@ class Auth:
         with open(CREDENTIALS, "r", newline="") as master_password:
             reader = csv.DictReader(master_password)
             for row in reader:
-                self.credentials[decryption(row["username"])] = {
-                    "password": decryption(row["password"]),
-                    "hint": decryption(row["hint"]),
+                self.credentials[row["username"]] = {
+                    "password": row["password"],
+                    "hint": row["hint"],
                 }
 
     def login(self, username, password):
-        if username not in self.credentials.keys():
-            return "Login details not found"
-        if self.credentials[username]["password"] != password:
-            return "Incorrect password, please try again"
-        return True
+        cred = derive_creds(password)
+        for enc_username, creds in self.credentials.items():
+            try:
+                dec_username = decryption(enc_username, cred)
+            except Exception:
+                    continue
 
-    def get_hint(self, username):
-        if username in self.credentials:
-            return f"Hint: {self.credentials[username]['hint'].strip()}"
+            if dec_username == username:
+                if verify_password(creds["password"], password):
+                    return "success", derive_vault(password)
+                return "Incorrect password, please try again", None
+        return "User not found", None        
+
+    def get_hint(self, username, key):
+        for enc_username, creds in self.credentials.items():
+            try:
+                if decryption(enc_username, key) == username:
+                    return f"Hint: {self.credentials[username]['hint'].strip()}"
+            except Exception:
+                continue
+        return None
 
     def register(self, username, password, hint):
-        if username in self.credentials:
+        key = derive_creds(password)
+        if any(decryption(u, key) == username for u in self.credentials):
             print("Username already exists.")
             return False
-        with open(CREDENTIALS, "a", newline="") as master_password:
+        with open(CREDENTIALS, "a", newline="") as f:
             writer = csv.DictWriter(
-                master_password, fieldnames=["username", "password", "hint"]
+                f, fieldnames=["username", "password", "hint"]
             )
             writer.writerow(
                 {
-                    "username": encryption(username),
-                    "password": encryption(password),
-                    "hint": encryption(hint),
+                    "username": encryption(username, key),
+                    "password": hash_password(password),
+                    "hint": encryption(hint, key),
                 }
             )
-            return True
+        return True
 
     def logout(self):
         self.credentials = {}
@@ -91,27 +103,35 @@ class Auth:
 
         return "".join(characters)
 
-    def update_password(self, username, password):
+    def update_password(self, username, old_password, new_password):
+        key = derive_creds(old_password)
+        new_key = derive_creds(new_password)
         df = pd.read_csv(CREDENTIALS)
         for i, row in df.iterrows():
-            if decryption(row["username"]) == username:
-                df.at[i, "password"] = encryption(password)
-                break
+            try:
+                if decryption(row["username"], key) == username:
+                    df.at[i, "username"] = encryption(username, new_key)
+                    df.at[i, "password"] = hash_password(new_password)
+                    df.at[i, "hint"] = encryption(decryption(row["hint"], key), new_key)
+                    break
+            except Exception:
+                continue
         df.to_csv(CREDENTIALS, index=False)
-        self.credentials[username]["password"] = password
 
-    def update_hint(self, username):
+    def update_hint(self, username, key):
         to_update = input("Update memorable hint (Yes/No)? ").casefold().strip()
         if to_update == "no":
             return False
         new_hint = input("Please enter a hint: ")
         df = pd.read_csv(CREDENTIALS)
         for i, row in df.iterrows():
-            if decryption(row["username"]) == username:
-                df.at[i, "hint"] = encryption(new_hint)
-                break
+            try:
+                if decryption(row["username"], key) == username:
+                    df.at[i, "hint"] = encryption(new_hint, key)
+                    break
+            except Exception:
+                continue
         df.to_csv(CREDENTIALS, index=False)
-        self.credentials[username]["hint"] = new_hint
         return True
 
     def change_password(self, username, password):
@@ -127,8 +147,8 @@ class Auth:
 
                 use_suggestion = input("Use suggestion (Yes/No)?" ).strip().casefold()
                 if use_suggestion == "yes":
-                    self.update_password(username, suggestion)
-                    self.update_hint(username)
+                    self.update_password(username, password, suggestion)
+                    self.update_hint(username, derive_creds(suggestion))
                     return suggestion
                 
                 update = pwinput.pwinput("Please enter new password: ")
@@ -156,8 +176,8 @@ class Auth:
                     print("Passwords do not match. Try again.")
                     continue
 
-                self.update_password(username, update)
-                self.update_hint(username)
+                self.update_password(username, password, update)
+                self.update_hint(username, derive_creds(update))
                 print("The password was succesfully updated")
                 return update
 
