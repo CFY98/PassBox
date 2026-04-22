@@ -1,6 +1,7 @@
 # EXTERNAL IMPORTS
 import json
 import re
+import pwinput
 
 # PASSBOX IMPORTS
 from config import VAULT
@@ -9,7 +10,7 @@ from vault import vault
 
 # CONTINUE LOGIC
 def keep_going(auth=None):
-    return input("\nReturn to Main Menu (Yes/No)? ").strip().casefold() == "yes"
+    return input("\nReturn to Main Menu (y/n)? ").strip().casefold() == "y"
 
 # PASSWORD SUGGESTER
 def get_password(auth):
@@ -19,10 +20,10 @@ def get_password(auth):
     suggest_pwd = auth.strong_password(15)
     
     print(f"\nPassword suggestion: {suggest_pwd}")
-    use = input("\nUse suggestion (Yes/No)? ").strip().casefold()
-    if use == "yes":
+    use = pwinput.pwinput("\nUse suggestion (y/n)? ").strip().casefold()
+    if use == "y":
         return suggest_pwd
-    intended_password = input("Please enter the intended password: ")
+    intended_password = pwinput("Please enter the intended password: ")
     return intended_password
 
 # JSON WRITER
