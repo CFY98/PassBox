@@ -1,6 +1,9 @@
 # EXTERNAL LIBRARIES
 import json
 
+# PASSBOX MODULES
+from config import VAULT
+
 # VAULT FUNCTIONS
 def new_vault():
     VAULT.write_text(json.dumps({}), encoding="utf-8")
