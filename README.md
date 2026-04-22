@@ -1,6 +1,6 @@
 # 🔐 PassBox
 
-PassBox is password manager with a hybrid secruity model to securely store and manage user credentials. It separates data identification (via hashing) from data protection (via encryption) to ensure both usability and security. 
+PassBox is password manager with a hybrid secruity model to explore how secure systems work. It separates data identification (via hashing) from data protection (via encryption) to ensure both usability and security. 
 
 ## 🧠 Features
 
@@ -47,7 +47,7 @@ hash_domain(domain) → {
 
 - Python 3.x installed on your system
 
-📦 How to Run
+##📦 How to Run
 
 1. Clone the repository:
 
@@ -67,7 +67,7 @@ cd PassBox
 pip install -r requirements.txt
 ```
 
-4. Run the password script:
+4. Run the PassBox:
 
 ```
 python passbox.py
