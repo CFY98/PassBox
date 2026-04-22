@@ -36,10 +36,11 @@ def new_vault():
 
 def vault():
     if VAULT.exists():
-            try:
-                return json.load(VAULT.read_text())
-            except json.JSONDecodeError:
-                return {}
+        try:
+            with VAULT.open("r", encoding="utf-8") as f:
+                return json.load(f)
+        except json.JSONDecodeError:
+            return {}
     else:
         new_vault()
         return {}

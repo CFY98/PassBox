@@ -121,7 +121,7 @@ class Auth:
             if choice == "yes":
                 suggestion = self.strong_password(15)
                 print(
-                    f"Suggestion: {suggestion}\n",
+                    f"Password suggestion: {suggestion}\n",
                     end="",
                 )
 
