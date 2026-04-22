@@ -9,20 +9,21 @@ import pwinput
 
 # PASSBOX MODULES
 from utils import decryption, encryption, generate_key
+from config import CREDENTIALS
 
 # AUTH CLASS
 class Auth:
     def __init__(self):
         generate_key()
         self.credentials = {}
-        if not os.path.exists("credentials.csv"):
-            with open("credentials.csv", "w", newline="") as master_password:
+        if not CREDENTIALS.exists():
+            with open(CREDENTIALS, "w", newline="") as master_password:
                 writer = csv.DictWriter(
                     master_password, fieldnames=["username", "password", "hint"]
                 )
                 writer.writeheader()
 
-        with open("credentials.csv", "r", newline="") as master_password:
+        with open(CREDENTIALS, "r", newline="") as master_password:
             reader = csv.DictReader(master_password)
             for row in reader:
                 self.credentials[decryption(row["username"])] = {
@@ -45,7 +46,7 @@ class Auth:
         if username in self.credentials:
             print("Username already exists.")
             return False
-        with open("credentials.csv", "a", newline="") as master_password:
+        with open(CREDENTIALS, "a", newline="") as master_password:
             writer = csv.DictWriter(
                 master_password, fieldnames=["username", "password", "hint"]
             )
@@ -91,12 +92,12 @@ class Auth:
         return "".join(characters)
 
     def update_password(self, username, password):
-        df = pd.read_csv("credentials.csv")
+        df = pd.read_csv(CREDENTIALS)
         for i, row in df.iterrows():
             if decryption(row["username"]) == username:
                 df.at[i, "password"] = encryption(password)
                 break
-        df.to_csv("credentials.csv", index=False)
+        df.to_csv(CREDENTIALS, index=False)
         self.credentials[username]["password"] = password
 
     def update_hint(self, username):
@@ -104,12 +105,12 @@ class Auth:
         if to_update == "no":
             return False
         new_hint = input("Please enter a hint: ")
-        df = pd.read_csv("credentials.csv")
+        df = pd.read_csv(CREDENTIALS)
         for i, row in df.iterrows():
             if decryption(row["username"]) == username:
                 df.at[i, "hint"] = encryption(new_hint)
                 break
-        df.to_csv("credentials.csv", index=False)
+        df.to_csv(CREDENTIALS, index=False)
         self.credentials[username]["hint"] = new_hint
         return True
 
@@ -120,15 +121,17 @@ class Auth:
             if choice == "yes":
                 suggestion = self.strong_password(15)
                 print(
-                    f'Here is a suggestion: {suggestion}\nIf you want to use it, type "use suggestion".\n',
+                    f"Suggestion: {suggestion}\n",
                     end="",
                 )
 
-                update = pwinput.pwinput("Please enter new password: ")
-                if update == "use suggestion":
+                use_suggestion = input("Use suggestion (Yes/No)?" ).strip().casefold()
+                if use_suggestion == "yes":
                     self.update_password(username, suggestion)
                     self.update_hint(username)
                     return suggestion
+                
+                update = pwinput.pwinput("Please enter new password: ")
 
                 if update == password:
                     print("Cannot be old password, please try again.")

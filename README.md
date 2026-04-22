@@ -1,20 +1,45 @@
 # 🔐 PassBox
 
-PassBox is a simple Python programme featuring basic password encryption logic. The primary aim of this project is to safely store, protect, or validate a user password using simple algorithms.
+PassBox is password manager with a hybrid secruity model to securely store and manage user credentials. It separates data identification (via hashing) from data protection (via encryption) to ensure both usability and security. 
 
-## 🧠 What It Does
+## 🧠 Features
 
-This project includes:
+- Deterministic hashing (hashlib) for stable entry IDs for backup, update, and removal
 
-- A basic password program written in Python
+- Encryption (Fernet) to protect sensitive data
 
-- Simple encryption logic — demonstrating how to protect passwords
+- Decryption only at display time
 
-- Beginner-friendly code suitable for learning purposes
+- Fuzzy search on decrypted values for flexible querying
+
+- Cli-based interface
+
+## 💡 Methodology
+
+```
+hash_domain(domain) → {
+    "domain": encrypted,
+    "username": encrypted,
+    "password": encrypted
+}
+```
+- Hashes for consistent lookup
+
+- Encryption for data protection
+
+- Decryption only client-facing operations (display and fuzzy search)
 
 ## 🛠️ Technologies
 
 - **Python**: Main programming language
+
+- **hashlib (built-in)**: hashing
+
+- **cryptography**: encryption (Fernet)
+
+- **json**: encrypted data storage
+
+- **csv**: authentication storage
 
 ## 🚀 Getting Started
 
@@ -36,29 +61,45 @@ git clone https://github.com/CFY98/PassBox.git
 cd PassBox
 ```
 
-3. Run the password script:
+3. Install dependencies:
 
 ```
-python main.py
+pip install -r requirements.txt
+```
+
+4. Run the password script:
+
+```
+python passbox.py
 ```
 
 🔹 The script will perform its encryption routine with user input as defined in the code.
 
-## ⚒️ Future Improvements
+##  ⚠️ Security Notes
 
-- A master password login to guard the whole vault.
-- Add / view / delete / update entries (site + username + password)
-- Auto-generate strong passwords for new entries
-- Save everything encrypted to a local file
-- Search entries by site name
+- Encryption keys are stored locally and must be protected
 
-## 🗂 Repository Contents
+- Hashes are one-way and cannot be reversed
 
-📄 main.py — Main Python program implementing basic password logic
+## ⏱️ Future Improvements
 
-📄 README.md — This file
+- Session locking after repeated failures
 
-📄 LICENSE — MIT open source license
+- Flask implementation
+
+## 🗂 Project Structure
+
+```
+PassBox
+├── auth.py             # Login, password, hints, and logout logic
+├── main.py             # Menu logic
+├── options.py          # Interface options and function map
+├── passbox.py          # Login entry point loop
+├── requirements.txt    # List of non-built-in libaries
+├── utils.py            # Encryption, hashing, vault generation
+├── README              # This file
+└── LICENSE             # MIT License
+```
 
 ## 📜 License
 

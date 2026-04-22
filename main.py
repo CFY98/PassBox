@@ -16,7 +16,7 @@ def passbox(auth):
             auth.logout()
             return
         if prompt in options_map:
-            options_map[prompt]()
+            options_map[prompt](auth)
     except KeyError:
         print("Please refer to list of options")
 

@@ -5,24 +5,23 @@ import hashlib
 
 from cryptography.fernet import Fernet
 
+# PASSBOX IMPORTS
+from config import KEY, VAULT
+
 # ENCRYPTION FUNCTIONS
 def generate_key():
-    if not os.path.exists("key.key"):
+    if not KEY.exists():
         key = Fernet.generate_key()
-        with open("key.key", "wb") as f:
-            f.write(key)
-
+        KEY.write_bytes(key)
 
 def encryption(value):
-    with open("key.key", "rb") as f:
-        key = f.read()
+    key = KEY.read_bytes()
     cipher = Fernet(key)
     return cipher.encrypt(value.encode("utf-8")).decode("utf-8")
 
 
 def decryption(value):
-    with open("key.key", "rb") as f:
-        key = f.read()
+    key = KEY.read_bytes()
     cipher = Fernet(key)
     return cipher.decrypt(value.encode("utf-8")).decode("utf-8")
 
@@ -32,15 +31,13 @@ def hash_domain(domain: str) -> str:
 
 # VAULT FUNCTIONS
 def new_vault():
-    with open("vault.json", "w") as f:
-        json.dump({}, f)
+    VAULT.write_text(json.dumps({}), encoding="utf-8")
 
 
 def vault():
-    if os.path.exists("vault.json"):
-        with open("vault.json", "r") as f:
+    if VAULT.exists():
             try:
-                return json.load(f)
+                return json.load(VAULT.read_text())
             except json.JSONDecodeError:
                 return {}
     else:
