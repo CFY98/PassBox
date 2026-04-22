@@ -119,7 +119,7 @@ class Auth:
         df.to_csv(CREDENTIALS, index=False)
 
     def update_hint(self, username, key):
-        to_update = input("Update memorable hint (Yes/No)? ").casefold().strip()
+        to_update = input("Update memorable hint (y/n)? ").casefold().strip()
         if to_update == "no":
             return False
         new_hint = input("Please enter a hint: ")
@@ -136,17 +136,17 @@ class Auth:
 
     def change_password(self, username, password):
         while True:
-            choice = input("Change password (Yes/No)? ").strip().lower()
+            choice = input("Change password (y/n)? ").strip().lower()
 
-            if choice == "yes":
+            if choice == "y":
                 suggestion = self.strong_password(15)
                 print(
                     f"Password suggestion: {suggestion}\n",
                     end="",
                 )
 
-                use_suggestion = input("Use suggestion (Yes/No)?" ).strip().casefold()
-                if use_suggestion == "yes":
+                use_suggestion = input("Use suggestion (y/n)?" ).strip().casefold()
+                if use_suggestion == "y":
                     self.update_password(username, password, suggestion)
                     self.update_hint(username, derive_creds(suggestion))
                     return suggestion
@@ -186,10 +186,10 @@ class Auth:
                 return password
 
             else:
-                retry = input("Did I catch that right (Yes/No)? ").strip().lower()
-                if retry == "yes":
+                retry = input("Did I catch that right (y/n)? ").strip().lower()
+                if retry == "y":
                     return password
                 elif retry != "no":
-                    print('It\'s a "Yes" or "No" answer.')
+                    print("Invalid input, please try again.")
                 else:
                     continue

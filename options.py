@@ -43,9 +43,9 @@ def add_entry(auth=None, vault_key=None):
         data = vault()
         if hash_key in data:
             check = (
-                input("This entry already exists. Overwrite (Yes/No)? ").strip().casefold()
+                input("This entry already exists. Overwrite (y/n)? ").strip().casefold()
             )
-            if check == "no":
+            if check == "n":
                 return False
 
         data.update(

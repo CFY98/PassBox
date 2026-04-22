@@ -19,9 +19,9 @@ def passbox():
 
         if status == "User not found":
             register = input(
-                "User not found. Would you like to register (Yes/No)? "
+                "User not found. Would you like to register (y/n)? "
             ).strip().casefold()
-            if register == "yes":
+            if register == "y":
                 hint = input("Please enter a memorable hint: ")
                 if auth.register(username, password, hint):
                     login = auth.login(username, password)
