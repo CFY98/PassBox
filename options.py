@@ -4,7 +4,7 @@ import re
 
 # PASSBOX IMPORTS
 from config import VAULT
-from utils import decryption, encryption, vault, hash_domain
+from security import decryption, encryption, vault, hash_domain
 
 # CONTINUE LOGIC
 def keep_going(auth=None):

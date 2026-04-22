@@ -1,8 +1,7 @@
 # EXTERNAL IMPORTS
-import json
 import os
 import hashlib
-
+from argon2 import PasswordHasher
 from cryptography.fernet import Fernet
 
 # PASSBOX IMPORTS
@@ -25,22 +24,16 @@ def decryption(value):
     cipher = Fernet(key)
     return cipher.decrypt(value.encode("utf-8")).decode("utf-8")
 
+def hash_password(value):
+    ph = PasswordHasher()
+    return ph.hash(value)
+
+def verify_password(hashed_value, value):
+    try:
+        return ph.verify(hash_password, value)
+    except Exception:
+        return False
+
 def hash_domain(domain: str) -> str:
     domain = domain.strip().lower()
     return hashlib.sha256(domain.encode("utf-8")).hexdigest()
-
-# VAULT FUNCTIONS
-def new_vault():
-    VAULT.write_text(json.dumps({}), encoding="utf-8")
-
-
-def vault():
-    if VAULT.exists():
-        try:
-            with VAULT.open("r", encoding="utf-8") as f:
-                return json.load(f)
-        except json.JSONDecodeError:
-            return {}
-    else:
-        new_vault()
-        return {}

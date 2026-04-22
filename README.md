@@ -96,7 +96,7 @@ PassBox
 ├── options.py          # Interface options and function map
 ├── passbox.py          # Login entry point loop
 ├── requirements.txt    # List of non-built-in libaries
-├── utils.py            # Encryption, hashing, vault generation
+├── security.py         # Encryption, hashing, vault generation
 ├── README              # This file
 └── LICENSE             # MIT License
 ```

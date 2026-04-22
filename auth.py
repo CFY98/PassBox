@@ -8,7 +8,7 @@ import pandas as pd
 import pwinput
 
 # PASSBOX MODULES
-from utils import decryption, encryption, generate_key
+from security import decryption, encryption, generate_key
 from config import CREDENTIALS
 
 # AUTH CLASS
