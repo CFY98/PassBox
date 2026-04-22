@@ -1,9 +1,10 @@
-# EXTERNAL IMPORTS
+# EXTERNAL LIBRARIES 
 import pwinput
 
 # PASSBOX MODULES
-from auth import Auth
-from main import main   
+from core.auth import Auth
+from core.security import derive_creds
+from app.main import main   
 
 # LOGIN DAEMON
 def passbox():
@@ -15,26 +16,23 @@ def passbox():
 
     while failures < max_attempts:
         password = pwinput.pwinput("Please enter your password: ").strip()
-        status, vault_key = auth.login(username, password)
+        status, session = auth.login(username, password)
 
-        if status == "User not found":
-            register = input(
-                "User not found. Would you like to register (y/n)? "
-            ).strip().casefold()
-            if register == "y":
+        if status == "invalid_user":
+            if input("Register (y/n)? ").strip().casefold() == "y":
                 hint = input("Please enter a memorable hint: ")
                 if auth.register(username, password, hint):
-                    login = auth.login(username, password)
-                    main(auth, vault_key)
+                    status, session = auth.login(username, password)
+                    main(session)
             return
 
-        elif status == "Incorrect password, please try again":
+        elif status == "invalid_password":
             failures += 1
             attempts_left = max_attempts - failures
             if attempts_left > 0:
                 print(f"Please try again. Attempts left: {attempts_left}".upper())
                 if failures >= 2:
-                    hint_key = auth.derive_creds(password)
+                    hint_key = derive_creds(password)
                     print(auth.get_hint(username, hint_key))
                 if failures >= 4:
                     new_password = auth.change_password(username, password)
@@ -44,7 +42,7 @@ def passbox():
                 print("Incorrect password, no attempts left.")
                 return
         else:
-            main(auth, vault_key)
+            main(session)
             return
 
 if __name__ == "__main__":

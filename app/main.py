@@ -1,5 +1,5 @@
 # PASSBOX MODULES
-from options import options_map
+from .options import options_map
 
 # PASSBOX INTERFACE
 def menu():
@@ -7,20 +7,19 @@ def menu():
     print("\n-------- MAIN MENU --------\n")
     for key, value in menu.items():
         print(f"{key}: {value}")
-    print()
 
-def main(auth, vault_key):
+def main(session):
     while True:
         menu()
-        prompt = input("Answer: ").strip()
+        prompt = input("\nAnswer: ").strip()
         print()
         try:
             if prompt == "6":
-                auth.logout()
+                session.auth.logout()
                 break
-            options_map[prompt](auth, vault_key)
+            options_map[prompt](session)
         except KeyError:
-            print("Please refer to list of options")
+            print("\nPlease refer to list of options")
 
 if __name__ == "__main__":
     print("Module not meant to be run directly")
