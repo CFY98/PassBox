@@ -55,12 +55,12 @@ class Auth:
             print("Username already exists.")
             return False
         
-        user_salt = os.urandom(16).hex()
+        user_salt = os.urandom(16)
         master_key = _derive_master_key(password, user_salt)
         user_enc_key = derive_user_enc_key(get_app_salt())
 
         vault_file = str(VAULT_DIR / f"{username_hmac[:16]}.json")
-        record = { "username_hmac": username_hmac, "user_salt": user_salt, "username": encryption(username, user_enc_key), "password": hash_password(password), "hint": hint, "vault_file": vault_file}
+        record = { "username_hmac": username_hmac, "user_salt": user_salt.hex(), "username": encryption(username, user_enc_key), "password": hash_password(password), "hint": hint, "vault_file": vault_file}
 
         with open(CREDENTIALS, "a", encoding="utf-8", newline="") as f:
             writer = csv.DictWriter(
