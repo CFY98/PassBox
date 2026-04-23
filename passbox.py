@@ -3,7 +3,6 @@ import pwinput
 
 # PASSBOX MODULES
 from core.auth import Auth
-from core.security import derive_creds
 from app.main import main   
 
 # LOGIN DAEMON
@@ -32,8 +31,7 @@ def passbox():
             if attempts_left > 0:
                 print(f"Please try again. Attempts left: {attempts_left}".upper())
                 if failures >= 2:
-                    hint_key = derive_creds(password)
-                    print(auth.get_hint(username, hint_key))
+                    print(auth.get_hint(username))
                 if failures >= 4:
                     new_password = auth.change_password(username, password)
                     if new_password != password:

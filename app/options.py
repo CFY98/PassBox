@@ -4,8 +4,9 @@ import re
 import pwinput
 
 # PASSBOX MODULES
-from core.security import (decryption, encryption, derive_app_user, check_key)
+from core.security import (decryption, encryption, derive_app_user)
 from core.vault import (vault, edit_vault)
+from core.utils import strong_password
 
 # CONTINUE LOGIC
 def keep_going(session):
@@ -13,7 +14,7 @@ def keep_going(session):
 
 # PASSWORD SUGGESTER
 def get_password(session):
-    suggest_pwd = session.auth.strong_password(15)
+    suggest_pwd = strong_password(15)
     
     print(f"\nPassword suggestion: {suggest_pwd}")
     if pwinput.pwinput("\nUse suggestion (y/n)? ").strip().casefold() == "y":
