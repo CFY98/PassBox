@@ -4,7 +4,7 @@ import re
 import pwinput
 
 # PASSBOX MODULES
-from core.security import (decryption, encryption, hash_value, check_key)
+from core.security import (decryption, encryption, derive_app_user, check_key)
 from core.vault import (vault, edit_vault)
 
 # CONTINUE LOGIC
@@ -28,10 +28,10 @@ def add_entry(session):
         domain_name = input("Please enter the username/email: ")
         domain_password = get_password(session)
         
-        hash_key = hash_value(domain, session.hmac_key)
+        fzf_id = derive_app_user(domain, session.hmac_key)
         data = vault(session.vault_file)
 
-        if hash_key in data:
+        if fzf_id in data:
             check = (
                 input("This entry already exists. Overwrite (y/n)? ").strip().casefold()
             )
@@ -40,10 +40,10 @@ def add_entry(session):
 
         data.update(
             {
-                hash_key: {
-                    "domain": encryption(domain, session.vault_key),
-                    "username": encryption(domain_name, session.vault_key),
-                    "password": encryption(domain_password, session.vault_key),
+                fxf_id: {
+                    "domain": encryption(domain, session.enc_key),
+                    "username": encryption(domain_name, session.enc_key),
+                    "password": encryption(domain_password, session.enc_key),
                 }
             }
         )
@@ -61,9 +61,9 @@ def view_entries(session):
             break
 
         for domain, creds in unlock.items():
-            print("Site:", decryption(creds["domain"], session.vault_key))
-            print("Username:", decryption(creds["username"], session.vault_key))
-            print("Password:", decryption(creds["password"], session.vault_key))
+            print("Site:", decryption(creds["domain"], session.enc_key))
+            print("Username:", decryption(creds["username"], session.enc_key))
+            print("Password:", decryption(creds["password"], session.enc_key))
             print("-" * 29)
 
         if keep_going(session):
@@ -75,20 +75,20 @@ def update_entry(session):
         new_name = input("Please enter the new username/email: ")
         new_password = get_password(session)
 
-        hash_choice = hash_value(choice, session.hmac_key)
+        fzf_id = derive_app_user(choice, session.hmac_key)
         entries = vault(session.vault_file)
         
-        if hash_choice not in entries:
+        if fzf_id not in entries:
             print("Entry not found")
             if keep_going(session):
                 break
-        entries.pop(hash_choice)
+        entries.pop(fzf_id)
         entries.update(
             {
-                hash_choice: {
-                    "domain": encryption(choice, session.vault_key),
-                    "username": encryption(new_name, session.vault_key),
-                    "password": encryption(new_password, session.vault_key),
+                fzf_id: {
+                    "domain": encryption(choice, session.enc_key),
+                    "username": encryption(new_name, session.enc_key),
+                    "password": encryption(new_password, session.enc_key),
                 }
             }
         )
@@ -102,11 +102,11 @@ def delete_entry(session):
     while True:
         delete = input("\nPlease enter the name of the entry you want to delete: ")
 
-        hash_delete = hash_value(delete, session.hmac_key)
+        fzf_id = derive_app_user(delete, session.hmac_key)
         target = vault(session.vault_file)
 
-        if hash_delete in target:
-            target.pop(hash_delete)
+        if fzf_id in target:
+            target.pop(fzf_id)
             edit_vault(target, session.vault_file)
             print("\nEntry successfully deleted")
         else:
@@ -124,13 +124,13 @@ def search_vault(session):
         found = False
         
         for key, creds in storage.items():
-            domain_key = decryption(creds["domain"], session.vault_key)
+            domain_key = decryption(creds["domain"], session.enc_key)
         
             if re.search(seek_entry, domain_key, re.IGNORECASE):
                 print("---------- RESULTS ----------\n")
                 print("Site:", domain_key)
-                print("Username:", decryption(creds["username"], session.vault_key))
-                print("Password:", decryption(creds["password"], session.vault_key))
+                print("Username:", decryption(creds["username"], session.enc_key))
+                print("Password:", decryption(creds["password"], session.enc_key))
                 print("-" * 29)
                 found = True
 
