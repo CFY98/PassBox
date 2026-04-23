@@ -4,15 +4,16 @@ import os
 import pwinput
 
 # PASSBOX MODULES
-from .security import (gen_app_salt, get_app_salt, _derive_master_key, derive_user_enc_key, derive_app_user, encryption, hash_password, verify_password)
+from .security import (gen_app_salt, _derive_master_key, derive_user_enc_key, derive_app_user, encryption, hash_password, verify_password)
 from .utils import (valid_password, strong_password)
-from lib.config import (CREDENTIALS, APP_SALT, VAULT_DIR)
+from lib.config import (CREDENTIALS, APP_SALT_PATH, APP_SALT, VAULT_DIR)
+
 from app.session import Session
 
 # AUTH CLASS
 class Auth:
     def __init__(self):
-        gen_app_salt(APP_SALT)
+        gen_app_salt(APP_SALT_PATH)
         self.credentials = {}
         if not CREDENTIALS.exists():
             with open(CREDENTIALS, "w", encoding="utf-8", newline="") as f:
@@ -27,7 +28,7 @@ class Auth:
                 self.credentials[row["username_hmac"]] = row
 
     def login(self, username, password):
-        username_hmac = derive_app_user(username, get_app_salt())
+        username_hmac = derive_app_user(username, APP_SALT)
         creds = self.credentials.get(username_hmac)
         if not creds:
             return "invalid_user", None
@@ -41,7 +42,7 @@ class Auth:
         return "valid", Session(master_key, vault_file)
 
     def get_hint(self, username):
-        username_hmac = derive_app_user(username, get_app_salt())
+        username_hmac = derive_app_user(username, APP_SALT)
         creds = self.credentials.get(username_hmac)
         
         if not creds:
@@ -49,14 +50,14 @@ class Auth:
         return creds["hint"]
 
     def register(self, username, password, hint):
-        username_hmac = derive_app_user(username, get_app_salt())
+        username_hmac = derive_app_user(username, APP_SALT)
         if username_hmac in self.credentials:
             print("Username already exists.")
             return False
         
         user_salt = os.urandom(16)
         master_key = _derive_master_key(password, user_salt)
-        user_enc_key = derive_user_enc_key(get_app_salt())
+        user_enc_key = derive_user_enc_key(APP_SALT)
 
         vault_file = str(VAULT_DIR / f"{username_hmac[:16]}.json")
         record = { "username_hmac": username_hmac, "user_salt": user_salt.hex(), "username": encryption(username, user_enc_key), "password": hash_password(password), "hint": hint, "vault_file": vault_file}
@@ -75,7 +76,7 @@ class Auth:
 
 
     def update_password(self, username, old_password, new_password):
-        username_hmac = derive_app_user(username, get_app_salt())
+        username_hmac = derive_app_user(username, APP_SALT)
         creds = self.credentials.get(username_hmac)
         
         if not creds:
@@ -104,7 +105,7 @@ class Auth:
         return True
 
     def update_hint(self, username, hint):
-        username_hmac = derive_app_user(username, get_app_salt())
+        username_hmac = derive_app_user(username, APP_SALT)
         creds = self.credentials.get(username_hmac)
        
         if not creds:
