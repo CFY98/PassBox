@@ -10,10 +10,13 @@ from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
 # PASSBOX MODULES
 from lib.config import APP_SALT
 
-# GENERATE APP_SALT
+# APP_SALT
 def gen_app_salt(path):
     if not path.exists():
         path.write_bytes(os.urandom(16))
+
+def get_app_salt():
+    return APP_SALT.read_bytes()
 
 # APP PASSWORD KEY DERIVATION
 def _derive_master_key(password: str, user_salt: bytes) -> bytes:

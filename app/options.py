@@ -41,7 +41,7 @@ def add_entry(session):
 
         data.update(
             {
-                fxf_id: {
+                fzf_id: {
                     "domain": encryption(domain, session.enc_key),
                     "username": encryption(domain_name, session.enc_key),
                     "password": encryption(domain_password, session.enc_key),

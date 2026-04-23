@@ -5,7 +5,7 @@ import pwinput
 
 # PASSBOX MODULES
 from .security import (gen_app_salt, get_app_salt, _derive_master_key, derive_user_enc_key, derive_app_user, encryption, hash_password, verify_password)
-from utils import (valid_password, strong_password)
+from .utils import (valid_password, strong_password)
 from lib.config import (CREDENTIALS, APP_SALT, VAULT_DIR)
 from app.session import Session
 

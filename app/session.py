@@ -13,11 +13,11 @@ class Session:
     @property
     def hmac_key(self):
         if self._hmac_key is None:
-            self._hmac_key = derive_hmac_key(self.hmac_key)
+            self._hmac_key = derive_hmac_key(self.master_key)
         return self._hmac_key
 
     @property
     def enc_key(self):
         if self._enc_key is None:
-            self._enc_key = derive_enc_key(self.enc_key)
+            self._enc_key = derive_enc_key(self.master_key)
         return self._hmac_key
