@@ -15,9 +15,6 @@ def gen_app_salt(path):
     if not path.exists():
         path.write_bytes(os.urandom(16))
 
-def get_app_salt():
-    return APP_SALT.read_bytes()
-
 # APP PASSWORD KEY DERIVATION
 def _derive_master_key(password: str, user_salt: bytes) -> bytes:
     kdf = Argon2id(salt=user_salt, length=32, iterations=3, lanes=4, memory_cost=64*1024, ad=None, secret=None,)
