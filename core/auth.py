@@ -7,36 +7,36 @@ import pandas as pd
 import pwinput
 
 # PASSBOX MODULES
-from .security import (generate_salt, derive_creds, derive_vault, encryption, decryption, hash_password, verify_password, check_key, hash_value)
-from lib.config import (CREDENTIALS, HMAC_USER, CREDS_SALT, VAULT_DIR)
+from .security import ( _derive, encryption, decryption, hash_password, verify_password, hash_value)
+from lib.config import (CREDENTIALS, APP_SALT, VAULT_DIR)
 from app.session import Session
 
 # AUTH CLASS
 class Auth:
     def __init__(self):
-        generate_salt(CREDS_SALT)
         self.credentials = {}
         if not CREDENTIALS.exists():
             with open(CREDENTIALS, "w", encoding="utf-8", newline="") as f:
                 writer = csv.DictWriter(
-                    f, fieldnames=["username_hmac", "username", "password", "hint", "vault_salt", "vault_file"]
+                    f, fieldnames=["username_hmac", "user_salt", "username", "password", "hint", "vault_salt", "vault_file"]
                 )
                 writer.writeheader()
 
         with open(CREDENTIALS, "r", encoding="utf-8", newline="") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                self.credentials[row["username_hmac"]] = {"username": row["username"], "password": row["password"], "hint": row["hint"], "vault_salt": row["vault_salt"], "vault_file": row["vault_file"]}
+                self.credentials[row["username_hmac"]] = {"user_salt": row["user_salt"], "username": row["username"], "password": row["password"], "hint": row["hint"], "vault_salt": row["vault_salt"], "vault_file": row["vault_file"]}
 
     def login(self, username, password):
-        username_hmac = hash_value(username, check_key(HMAC_USER))
+        user_salt = _derive(username, APP_SALT)
+        username_hmac = hash_value(username, get_hmac_key(password, bytes.fromhex(user_salt)))
         if username_hmac not in self.credentials:
             return "invalid_user", None
 
         creds = self.credentials[username_hmac]
         if verify_password(creds["password"], password):
             vault_salt = bytes.fromhex(creds["vault_salt"])
-            vault_key = derive_vault(password, vault_salt)
+            vault_key = _derive(password, vault_salt)
             vault_file = creds["vault_file"]
             return "valid", Session(self, vault_key, vault_file)
         return "invalid_password", None
@@ -49,20 +49,22 @@ class Auth:
         return None
 
     def register(self, username, password, hint):
-        username_hmac = hash_value(username, check_key(HMAC_USER))
+        user_salt = os.urandom(16).hex()
+        username_hmac = hash_value(username, get_hmac_key(password, bytes.fromhex(user_salt)))
         if username_hmac in self.credentials:
             print("Username already exists.")
             return False
-        key = derive_creds(password)
+        key = _derive(password, bytes.fromhex(user_salt))
         vault_salt = os.urandom(16).hex()
         vault_file = str(VAULT_DIR / f"{username_hmac[:16]}.json")
         with open(CREDENTIALS, "a", encoding="utf-8", newline="") as f:
             writer = csv.DictWriter(
-                f, fieldnames=["username_hmac", "username", "password", "hint", "vault_salt", "vault_file"]
+                f, fieldnames=["username_hmac", "user_salt", "username", "password", "hint", "vault_salt", "vault_file"]
             )
             writer.writerow(
                 {
-                    "username_hmac":hash_value(username, check_key(HMAC_USER)),
+                    "username_hmac": username_hmac,
+                    "user_salt": user_salt,
                     "username": encryption(username, key),
                     "password": hash_password(password),
                     "hint": hint,
@@ -105,31 +107,35 @@ class Auth:
 
         return "".join(characters)
 
-    def update_password(self, username, old_password, new_password):
-        username_hmac = hash_value(username, check_key(HMAC_USER))
-        key = derive_creds(old_password)
-        new_key = derive_creds(new_password)
+    def update_password(self, username, old_password, new_password, hint=None):
+        lookup_salt = _derive(username, APP_SALT)
+        username_hmac = hash_value(username, get_hmac_key(old_password, lookup_salt))
+        
         df = pd.read_csv(CREDENTIALS)
         for i, row in df.iterrows():
             if row["username_hmac"] == username_hmac:
-                try:
-                    df.at[i, "hint"] = encryption(decryption(row["hint"], key), new_key)
-                except Exception:
-                    pass
+                if hint is not none:
+                    df.at[i, "hint"] = hint
+                user_salt = bytes.fromhex(row["user_salt"])
+                new_key = _derive(new_password, user_salt)
                 df.at[i, "username"] = encryption(username, new_key)
                 df.at[i, "password"] = hash_password(new_password)
                 break
         df.to_csv(CREDENTIALS, index=False)
 
         if username_hmac in self.credentials:
+            self.credentials[username_hmac]["username"] = encryption(username, new_key)
             self.credentials[username_hmac]["password"] = hash_password(new_password)
+            if hint is not None:
+                self.credentials[username_hmac]["hint"] = hint
 
     def update_hint(self, username):
         to_update = pwinput.pwinput("Update memorable hint (y/n)? ").casefold().strip()
         if to_update == "n":
             return False
         new_hint = input("Please enter a hint: ")
-        username_hmac = hash_value(username, check_key(HMAC_USER))
+        lookup_dalt = _derive(username, APP_SALT)
+        username_hmac = hash_value(username, get_hmac_key(old_password, lookup_salt))
         df = pd.read_csv(CREDENTIALS)
         for i, row in df.iterrows():
             if row["username_hmac"] == username_hmac:
@@ -196,7 +202,7 @@ class Auth:
                 retry = input("Did I catch that right (y/n)? ").strip().lower()
                 if retry == "y":
                     return password
-                elif retry != "no":
+                elif retry != "n":
                     print("Invalid input, please try again.")
                 else:
                     continue
