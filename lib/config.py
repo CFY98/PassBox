@@ -15,7 +15,7 @@ CREDENTIALS = DATA_DIR / "credentials.csv"
 APP_SALT_PATH = DATA_DIR / "app.salt"
 
 def get_app_salt():
-    return APP_SALT.read_bytes()
+    return APP_SALT_PATH.read_bytes()
 
 APP_SALT = get_app_salt()
 
