@@ -12,5 +12,5 @@ VAULT_DIR.mkdir(exist_ok=True)
 
 # DATA FILE PATHS
 CREDENTIALS = DATA_DIR / "credentials.csv"
-CREDS_SALT = DATA_DIR / "creds.salt"
+APP_SALT = DATA_DIR / "app.salt"
 HMAC_USER = DATA_DIR / "hmac_user.key"

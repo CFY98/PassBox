@@ -28,21 +28,22 @@ class Auth:
                 self.credentials[row["username_hmac"]] = {"user_salt": row["user_salt"], "username": row["username"], "password": row["password"], "hint": row["hint"], "vault_salt": row["vault_salt"], "vault_file": row["vault_file"]}
 
     def login(self, username, password):
-        user_salt = _derive(username, APP_SALT)
-        username_hmac = hash_value(username, get_hmac_key(password, bytes.fromhex(user_salt)))
+        lookup_salt = _derive(username, APP_SALT)
+        username_hmac = hash_value(username, get_hmac_key(password, bytes.fromhex(lookup_salt)))
         if username_hmac not in self.credentials:
             return "invalid_user", None
 
         creds = self.credentials[username_hmac]
         if verify_password(creds["password"], password):
             vault_salt = bytes.fromhex(creds["vault_salt"])
-            vault_key = _derive(password, vault_salt)
+            master_key = _derive(password, vault_salt)
             vault_file = creds["vault_file"]
-            return "valid", Session(self, vault_key, vault_file)
+            return "valid", Session(self, master_key, vault_file)
         return "invalid_password", None
 
     def get_hint(self, username, key):
-        username_hmac = hash_value(username, check_key(HMAC_USER))
+        lookup_salt = _derive(username, APP_SALT)
+        username_hmac = hash_value(username, get_hmac_key(username, lookup_salt))
         creds = self.credentials.get(username_hmac)
         if creds:    
             return f"Hint: {creds['hint'].strip()}"
