@@ -3,77 +3,76 @@ import csv
 import os
 import random
 import string
-import pandas as pd
 import pwinput
 
 # PASSBOX MODULES
-from .security import ( _derive, encryption, decryption, hash_password, verify_password, hash_value)
+from .security import ( _derive_master_key, derive_enc_key, derive_hmac_key, derive_app_key, encryption, decryption, hash_password, verify_password, derive_app_user)
 from lib.config import (CREDENTIALS, APP_SALT, VAULT_DIR)
 from app.session import Session
 
 # AUTH CLASS
 class Auth:
     def __init__(self):
+        gen_app_salt(APP_SALT)
         self.credentials = {}
         if not CREDENTIALS.exists():
             with open(CREDENTIALS, "w", encoding="utf-8", newline="") as f:
                 writer = csv.DictWriter(
-                    f, fieldnames=["username_hmac", "user_salt", "username", "password", "hint", "vault_salt", "vault_file"]
+                    f, fieldnames=["username_hmac", "username", "password", "hint", "vault_file"]
                 )
                 writer.writeheader()
 
         with open(CREDENTIALS, "r", encoding="utf-8", newline="") as f:
             reader = csv.DictReader(f)
             for row in reader:
-                self.credentials[row["username_hmac"]] = {"user_salt": row["user_salt"], "username": row["username"], "password": row["password"], "hint": row["hint"], "vault_salt": row["vault_salt"], "vault_file": row["vault_file"]}
+                self.credentials[row["username_hmac"]] = row
 
     def login(self, username, password):
-        lookup_salt = _derive(username, APP_SALT)
-        username_hmac = hash_value(username, get_hmac_key(password, bytes.fromhex(lookup_salt)))
+        master_key = _derive_master_key(password, APP_SALT)
+        enc_key = derive_enc_key(master_key)
+        hmac_key = derive_hmac_key(master_key)
+        app_key = derive_app_key(APP_SALT)
+
+        username_hmac = derive_app_user(username, app_salt)
         if username_hmac not in self.credentials:
             return "invalid_user", None
 
         creds = self.credentials[username_hmac]
         if verify_password(creds["password"], password):
-            vault_salt = bytes.fromhex(creds["vault_salt"])
-            master_key = _derive(password, vault_salt)
             vault_file = creds["vault_file"]
-            return "valid", Session(self, master_key, vault_file)
+            return "valid", Session(enc_key, hmac_key, vault_file)
         return "invalid_password", None
 
-    def get_hint(self, username, key):
-        lookup_salt = _derive(username, APP_SALT)
-        username_hmac = hash_value(username, get_hmac_key(username, lookup_salt))
+    def get_hint(self, username):
+        app_key = derive_app_key(APP_SALT)
+        username_hmac = derive_app_user(username, app_key)
+        
         creds = self.credentials.get(username_hmac)
         if creds:    
-            return f"Hint: {creds['hint'].strip()}"
+            return creds["hint"]
         return None
 
     def register(self, username, password, hint):
-        user_salt = os.urandom(16).hex()
-        username_hmac = hash_value(username, get_hmac_key(password, bytes.fromhex(user_salt)))
+        master_key = _derive_master_key(password, APP_SALT)
+        enc_key = derive_enc_key(master_key)
+        hmac_key = derive_hmac_key(master_key)
+        app_key = derive_app_key(APP_SALT)
+
+        username_hmac = derive_app_user(username, app_key)
         if username_hmac in self.credentials:
             print("Username already exists.")
             return False
-        key = _derive(password, bytes.fromhex(user_salt))
-        vault_salt = os.urandom(16).hex()
+        
         vault_file = str(VAULT_DIR / f"{username_hmac[:16]}.json")
+        record = { "username_hmac": username_hmac, "username": encryption(username, enc_key), "password": hash_password(password), "hint": encryption(hint, enc_key), "vault_file": vault_file}
+
         with open(CREDENTIALS, "a", encoding="utf-8", newline="") as f:
             writer = csv.DictWriter(
-                f, fieldnames=["username_hmac", "user_salt", "username", "password", "hint", "vault_salt", "vault_file"]
-            )
-            writer.writerow(
-                {
-                    "username_hmac": username_hmac,
-                    "user_salt": user_salt,
-                    "username": encryption(username, key),
-                    "password": hash_password(password),
-                    "hint": hint,
-                    "vault_salt": vault_salt,
-                    "vault_file": vault_file
-                }
-            )
-        self.credentials[username_hmac] = {"username": encryption(username, key), "password": hash_password(password), "hint": encryption(hint, key), "vault_salt": vault_salt, "vault_file": vault_file}
+                f, fieldnames=record.keys())
+            writer.writerow(record)
+
+        # UPDATE CACHE
+        self.credentials[username_hmac] = record
         return True
 
     def logout(self):
@@ -109,43 +108,86 @@ class Auth:
         return "".join(characters)
 
     def update_password(self, username, old_password, new_password, hint=None):
-        lookup_salt = _derive(username, APP_SALT)
-        username_hmac = hash_value(username, get_hmac_key(old_password, lookup_salt))
+        old_master = _derive_master_key(old_password, APP_SALT)
+        old_hmac = derive_hmac_key(old_master)
+        app_key = derive_app_key(APP_SALT)
+
+        username_hmac = derive_app_user(username, app_key)
         
-        df = pd.read_csv(CREDENTIALS)
-        for i, row in df.iterrows():
-            if row["username_hmac"] == username_hmac:
-                if hint is not none:
-                    df.at[i, "hint"] = hint
-                user_salt = bytes.fromhex(row["user_salt"])
-                new_key = _derive(new_password, user_salt)
-                df.at[i, "username"] = encryption(username, new_key)
-                df.at[i, "password"] = hash_password(new_password)
-                break
-        df.to_csv(CREDENTIALS, index=False)
+        new_master = _derive_master_key(new_password, APP_SALT)
+        new_enc = derive_enc_key(new_master)
+        new_hmac = derive_hmac_key(new_master)
+        
+        enc_username = encryption(username, app_key)
+        enc_hint = encryption(new_hint, app_key)
+        hash_pass = hash_password(new_password)
+        
+        # UPDATE PERSISTENT STORAGE
+        updated_rows = []
 
+        with open(CREDENTIALS, "r", encoding="utf-8", newline="") as f:
+            reader = csv.DictReader(f)
+
+            for row in reader:
+                if row["username_hmac"] == username_hmac:
+                    if hint is not None:
+                        row["hint"] = enc_hint
+
+                    row["username"] = enc_username
+                    row["password"] = hash_pass
+
+                updated_rows.append(row)
+        
+        with open(CREDENTIALS, "w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=updated_rows[0].keys())
+            writer.writeheader()
+            writer.writerows(updated_rows)
+
+        # UPDATE CACHE
         if username_hmac in self.credentials:
-            self.credentials[username_hmac]["username"] = encryption(username, new_key)
-            self.credentials[username_hmac]["password"] = hash_password(new_password)
+            self.credentials[username_hmac]["username"] = enc_username
+            self.credentials[username_hmac]["password"] = hash_pass
             if hint is not None:
-                self.credentials[username_hmac]["hint"] = hint
+                self.credentials[username_hmac]["hint"] = enc_hint
 
-    def update_hint(self, username):
+    def update_hint(self, username, password):
         to_update = pwinput.pwinput("Update memorable hint (y/n)? ").casefold().strip()
         if to_update == "n":
             return False
         new_hint = input("Please enter a hint: ")
-        lookup_dalt = _derive(username, APP_SALT)
-        username_hmac = hash_value(username, get_hmac_key(old_password, lookup_salt))
-        df = pd.read_csv(CREDENTIALS)
-        for i, row in df.iterrows():
-            if row["username_hmac"] == username_hmac:
-                df.at[i, "hint"] = new_hint
-                break
-        df.to_csv(CREDENTIALS, index=False)
         
+        old_master = _derive_master_key(password, APP_SALT)
+        old_hmac = derive_hmac_key(old_master)
+        app_key = derive_app_key(APP_SALT)
+
+        username_hmac = derive_app_user(username, app_key)
+        
+        new_master = _derive_master_key(password, app_key)
+        new_enc = derive_enc_key(new_master)
+        new_hmac = derive_hmac_key(new_master)
+        
+        enc_hint = encryption(hint, app_key)
+
+        # UPDATE PERSISTENT STORAGE
+        updated_rows = []
+
+        with open(CREDENTIALS, "r", encoding="utf-8", newline="") as f:
+            reader = csv.DictReader(f)
+
+            for row in reader:
+                if row["username_hmac"] == username_hmac:
+                    row["hint"] = enc_hint
+
+                updated_rows.append(row)
+        
+        with open(CREDENTIALS, "w", encoding="utf-8", newline="") as f:
+            writer = csv.DictWriter(f, fieldnames=updated_rows[0].keys())
+            writer.writeheader()
+            writer.writerows(updated_rows)
+
+        # UPDATE CACHE
         if username_hmac in self.credentials:
-            self.credentials[username_hmac]["hint"] = new_hint
+            self.credentials[username_hmac]["hint"] = enc_hint
         return True
 
     def change_password(self, username, password):
