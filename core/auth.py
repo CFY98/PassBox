@@ -1,12 +1,11 @@
 # EXTERNAL LIBRARIES
 import csv
 import os
-import random
-import string
 import pwinput
 
 # PASSBOX MODULES
 from .security import (gen_app_salt, get_app_salt, _derive_master_key, derive_user_enc_key, derive_app_user, encryption, hash_password, verify_password)
+from utils import (valid_password, strong_password)
 from lib.config import (CREDENTIALS, APP_SALT, VAULT_DIR)
 from app.session import Session
 
@@ -74,34 +73,6 @@ class Auth:
     def logout(self):
         self.credentials = {}
 
-    def valid_password(self, password):
-        numbers = sum(c.isnumeric() for c in password)
-        letters = sum(c.isalpha() for c in password)
-        symbols = sum(c in string.punctuation for c in password)
-
-        return (
-            numbers >= 2
-            and letters >= 2
-            and symbols >= 2
-            and (5 <= len(password) <= 15)
-        )
-
-    def strong_password(self, length=15):
-        if length < 5:
-            raise ValueError("Password must be at least 5 characters long.")
-
-        letters = random.choices(string.ascii_letters, k=2)
-        numbers = random.choices(string.digits, k=2)
-        symbols = random.choices(string.punctuation, k=2)
-
-        total = length - 6
-        valid_password = string.ascii_letters + string.digits + string.punctuation
-        filler = random.choices(valid_password, k=total)
-
-        characters = letters + numbers + symbols + filler
-        random.shuffle(characters)
-
-        return "".join(characters)
 
     def update_password(self, username, old_password, new_password):
         username_hmac = derive_app_user(username, get_app_salt())
@@ -178,7 +149,7 @@ class Auth:
             choice = input("Change password (y/n)? ").strip().lower()
 
             if choice == "y":
-                suggestion = self.strong_password(15)
+                suggestion = strong_password(15)
                 print(
                     f"Password suggestion: {suggestion}\n",
                     end="",
@@ -204,7 +175,7 @@ class Auth:
                     )
                     return update
 
-                if not self.valid_password(update):
+                if not valid_password(update):
                     print(
                         "Password must be between 5-15 characters long, with a minimum of 2 letters, numbers and symbols."
                     )
