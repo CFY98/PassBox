@@ -2,6 +2,9 @@
 import csv
 import os
 
+from app.session import Session
+from lib.config import APP_SALT, CREDENTIALS, VAULT_DIR
+
 # PASSBOX MODULES
 from .security import (
     _derive_master_key,
@@ -12,9 +15,8 @@ from .security import (
     hash_password,
     verify_password,
 )
-from .utils import (apply_hint_update, change_password)
-from app.session import Session
-from lib.config import (APP_SALT, CREDENTIALS, VAULT_DIR)
+from .utils import apply_hint_update, change_password
+
 
 # AUTH CLASS
 class Auth:
@@ -43,9 +45,12 @@ class Auth:
             for row in reader:
                 self.credentials[row["username_hmac"]] = row
 
-    def login(self, username, password):
+    def _get_creds(self, username):
         username_hmac = derive_app_user(username, self.app_salt)
-        creds = self.credentials.get(username_hmac)
+        return username_hmac, self.credentials.get(username_hmac)
+
+    def login(self, username, password):
+        _, creds = self._get_creds(username)
         if not creds:
             return "invalid_user", None
 
@@ -58,15 +63,13 @@ class Auth:
         return "valid", Session(master_key, vault_file)
 
     def get_hint(self, username):
-        username_hmac = derive_app_user(username, self.app_salt)
-        creds = self.credentials.get(username_hmac)
-
+        _, creds = self._get_creds(username)
         if not creds:
             return None
         return creds["hint"]
 
     def register(self, username, password, hint):
-        username_hmac = derive_app_user(username, self.app_salt)
+        username_hmac, _ = self._get_creds(username)
         if username_hmac in self.credentials:
             print("Username already exists.")
             return False
@@ -94,9 +97,7 @@ class Auth:
         return True
 
     def update_cache_pass(self, username, password):
-        username_hmac = derive_app_user(username, self.app_salt)
-        creds = self.credentials.get(username_hmac)
-
+        username_hmac, creds = self._get_creds(username)
         if not creds:
             return False
 
@@ -107,9 +108,7 @@ class Auth:
         return cache_pass
 
     def update_cache_hint(self, username):
-        username_hmac = derive_app_user(username, self.app_salt)
-        creds = self.credentials.get(username_hmac)
-
+        username_hmac, creds = self._get_creds(username)
         if not creds:
             return False
 
