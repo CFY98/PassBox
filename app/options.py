@@ -1,63 +1,18 @@
 # EXTERNAL LIBRARIES
 import re
 
-import pwinput
-
 # PASSBOX MODULES
-from core.security import decryption, derive_app_user, encryption
-from core.utils import strong_password
+from core.security import decryption
+from core.utils import (
+    build_entry,
+    entry_exists,
+    get_domain,
+    get_id,
+    get_user_vault,
+    leave,
+    user_input,
+)
 from core.vault import edit_vault, vault
-
-
-# CONTINUE LOGIC
-def leave():
-    return input("\nReturn to Main Menu (y/n)? ").strip().casefold() == "y"
-
-
-# PASSWORD SUGGESTER
-def get_password():
-    suggest_pwd = strong_password(15)
-
-    print(f"\nPassword suggestion: {suggest_pwd}")
-    if pwinput.pwinput("\nUse suggestion (y/n)? ").strip().casefold() == "y":
-        return suggest_pwd
-    intended_password = pwinput.pwinput("Please enter the intended password: ")
-    return intended_password
-
-
-# I/O LAYER
-def user_input():
-    domain_user = input("Please enter the username/email: ")
-    domain_password = get_password()
-    return (domain_user, domain_password)
-
-
-def get_domain():
-    return input("\nPlease enter the name of the site: ")
-
-
-# GET_ID FOR VAULT ENTRIES
-def get_id(domain, session):
-    return derive_app_user(domain, session.hmac_key)
-
-
-# GET ENTRY
-def get_user_vault(session):
-    return vault(session.vault_file)
-
-
-# CHECK IF ENTRY EXISTS
-def entry_exists(fzf_id, data):
-    return fzf_id in data
-
-
-# BUILD VAULT ENTRY
-def build_entry(domain, username, password, enc_key):
-    return {
-        "domain": encryption(domain, enc_key),
-        "username": encryption(username, enc_key),
-        "password": encryption(password, enc_key),
-    }
 
 
 # OPTIONS
@@ -69,7 +24,10 @@ def add_entry(session):
         data = get_user_vault(session)
 
         if entry_exists(fzf_id, data):
-            if input("This entry already exists. Overwrite (y/n)? ").strip().casefold() == "n"
+            if (
+                input("This entry already exists. Overwrite (y/n)? ").strip().casefold()
+                == "n"
+            ):
                 return False
 
         data.update({fzf_id: build_entry(domain, username, password, session.enc_key)})
@@ -103,11 +61,13 @@ def update_entry(session):
         fzf_id = get_id(domain, session)
         data = get_user_vault(session)
 
-        if entry_exists(fzf_id, data):
+        if not entry_exists(fzf_id, data):
             if input("Entry not found, add to vault (y/n)? ").strip().casefold() == "y":
-                data.update({fzf_id: build_entry(domain, username, password, session.enc_key)})
-            if leave():
-                break
+                data.update(
+                    {fzf_id: build_entry(domain, username, password, session.enc_key)}
+                )
+        if leave():
+            break
 
         data.pop(fzf_id)
         data.update({fzf_id: build_entry(domain, username, password, session.enc_key)})
@@ -116,6 +76,7 @@ def update_entry(session):
 
         if leave():
             break
+
 
 def delete_entry(session):
     while True:
@@ -127,7 +88,8 @@ def delete_entry(session):
             data.pop(fzf_id)
             edit_vault(data, session.vault_file)
             print("\nEntry successfully deleted")
-        print("\nEntry not found")
+        else:
+            print("\nEntry not found")
 
         if leave():
             break
