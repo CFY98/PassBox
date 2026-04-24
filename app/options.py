@@ -21,7 +21,7 @@ def get_password():
     print(f"\nPassword suggestion: {suggest_pwd}")
     if pwinput.pwinput("\nUse suggestion (y/n)? ").strip().casefold() == "y":
         return suggest_pwd
-    intended_password = pwinput("Please enter the intended password: ")
+    intended_password = pwinput.pwinput("Please enter the intended password: ")
     return intended_password
 
 
