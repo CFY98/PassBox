@@ -13,7 +13,6 @@ def update_hint(username, hint):
     app_salt = APP_SALT.read_bytes()
     username_hmac = derive_app_user(username, app_salt)
 
-    # UPDATE PERSISTENT STORAGE
     updated_rows = []
 
     with open(CREDENTIALS, "r", encoding="utf-8", newline="") as f:
