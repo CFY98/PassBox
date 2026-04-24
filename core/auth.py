@@ -2,9 +2,6 @@
 import csv
 import os
 
-from app.session import Session
-from lib.config import APP_SALT, CREDENTIALS, VAULT_DIR
-
 # PASSBOX MODULES
 from .security import (
     _derive_master_key,
@@ -15,8 +12,9 @@ from .security import (
     hash_password,
     verify_password,
 )
-from .utils import apply_hint_update, change_password
-
+from .utils import (apply_hint_update, change_password)
+from app.session import Session
+from lib.config import (APP_SALT, CREDENTIALS, VAULT_DIR)
 
 # AUTH CLASS
 class Auth:

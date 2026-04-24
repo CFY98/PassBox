@@ -1,11 +1,9 @@
 # EXTERNAL LIBRARIES
 import pwinput
 
-from app.main import main
-
 # PASSBOX MODULES
 from core.auth import Auth
-
+from app.main import main
 
 # LOGIN HELPERS
 def load_auth():

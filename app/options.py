@@ -2,9 +2,9 @@
 import re
 
 # PASSBOX MODULES
-from core.security import decryption, derive_app_user, encryption
+from core.security import (decryption, derive_app_user, encryption)
 from core.utils import get_password
-from core.vault import edit_vault, vault
+from core.vault import (edit_vault, vault)
 
 
 # OPTIONS MENU UTILITIES

@@ -5,10 +5,9 @@ import string
 
 import pwinput
 
-from core.security import derive_app_user, hash_password
-
 # PASSBOX MODULES
-from lib.config import APP_SALT, CREDENTIALS
+from core.security import (derive_app_user, hash_password)
+from lib.config import (APP_SALT, CREDENTIALS)
 
 
 # HINT UTILITIES

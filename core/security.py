@@ -3,7 +3,6 @@ import base64
 import hashlib
 import hmac
 import os
-
 from argon2 import PasswordHasher
 from cryptography.fernet import Fernet
 from cryptography.hazmat.primitives.kdf.argon2 import Argon2id
