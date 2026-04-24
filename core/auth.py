@@ -112,3 +112,14 @@ class Auth:
         self.credentials[username_hmac]["password"] = new_password
         return True
 
+    def update_cache_hint(self, username, new_hint):
+        username_hmac = derive_app_user(username, self.app_salt)
+        creds = self.credentials.get(username_hmac)
+
+        if not creds:
+            return False
+
+        new_hint = update_hint(username, hint)
+
+        self.credentials[username_hmac]["password"] = new_hint
+        return True
