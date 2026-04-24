@@ -43,7 +43,7 @@ def passbox():
             password = login_password()
             status, session = auth.login(username, password)
 
-            if status == "success":
+            if status == "valid":
                 main(session)
                 return
 
