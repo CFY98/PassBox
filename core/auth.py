@@ -6,15 +6,15 @@ import pwinput
 # PASSBOX MODULES
 from .security import (derive_enc_key, gen_app_salt, _derive_master_key, derive_user_enc_key, derive_app_user, encryption, hash_password, verify_password)
 from .utils import (valid_password, strong_password)
-from lib.config import (CREDENTIALS, APP_SALT_PATH, VAULT_DIR)
+from lib.config import (CREDENTIALS, APP_SALT, VAULT_DIR)
 
 from app.session import Session
 
 # AUTH CLASS
 class Auth:
     def __init__(self):
-        gen_app_salt(APP_SALT_PATH)
-        self.app_salt = APP_SALT_PATH.read_bytes()
+        gen_app_salt(APP_SALT)
+        self.app_salt = APP_SALT.read_bytes()
 
         self.credentials = {}
         if not CREDENTIALS.exists():
