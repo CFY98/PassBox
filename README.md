@@ -7,9 +7,9 @@ PassBox is a CLI password manager with a hybrid secruity model to explore how se
 - Per-user encrypted vaults with unique vault files
 - Argon2id key derivation for master password
 - HMAC-based stable entry IDs for lookup, update, and removal
-- Fernet encryption for sensitive vault and credential data
+- Symmetric authenticated encryption (Fernet) for vault data and app_username
 - Decryption only occurs at display time
-- Fuzzy search on decrypted domain name values
+- Fuzzy search on hashed domain name values
 - CLI-based interface
 
 ## 💡 Security Model
@@ -18,7 +18,7 @@ PassBox is a CLI password manager with a hybrid secruity model to explore how se
 
                   os.urandom()
                        |
-         user_salt (per-user randomness)
+         user_salt (Randomised per user)
     app_salt (global system salt, generated once)
 
 ----------------------------------------------------
@@ -40,14 +40,14 @@ PassBox is a CLI password manager with a hybrid secruity model to explore how se
                        │
                    master_key
                        │   
-                       │ SHA256 key expansion
+                       │ SHA256 key derivation
                        │
                        ├── enc_key → base64(Fernet-compatible key)
                        └── hmac_key → SHA256-derived signing key
 ```
 - **Vault entries**: domain names, usernames and passwords are encrypted with Fernet
-- **Credentials**: usernames encrypted with Fernet, passwords hashed with Argon2id, hints as plain text (non-sensitive metadata)
-- **Entry IDs**: domain names hashed with HMAC-SHA256 for stable lookup without exposing raw values
+- **Credentials**: usernames encrypted with Fernet, passwords stord as Argon2id hashes for verification, hints as plain text (non-sensitive metadata)
+- **Vault Entry IDs**: domain names hashed with HMAC-SHA256 for stable lookup without exposing raw values
 - **Per-user vaults**: each user has an isolated vault file which is encrypted with a key to their master password
 
 ## Session Model
@@ -129,8 +129,7 @@ PassBox/
 │   └── config.py.       # Path configuration
 ├── data/                # Runtime data (ignored by git)
 │   ├── credentials.csv    
-│   ├── creds.salt
-│   ├── hmac_user.key
+│   ├── app.salt
 │   └── vaults/
 ├── requirements.txt     # Non-built-in Python libraries
 ├── README               # This file
