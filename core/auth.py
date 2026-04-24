@@ -2,8 +2,6 @@
 import csv
 import os
 
-import pwinput
-
 from app.session import Session
 from lib.config import APP_SALT, CREDENTIALS, VAULT_DIR
 
@@ -17,7 +15,6 @@ from .security import (
     hash_password,
     verify_password,
 )
-from .utils import change_password, update_hint
 
 
 # AUTH CLASS
@@ -104,9 +101,7 @@ class Auth:
         if not creds:
             return False
 
-        cache_pass = change_password(username, new_password)
-
-        self.credentials[username_hmac]["password"] = cache_pass
+        self.credentials[username_hmac]["password"] = new_password
         return True
 
     def update_cache_hint(self, username, new_hint):
@@ -116,9 +111,7 @@ class Auth:
         if not creds:
             return False
 
-        cache_hint = update_hint(username, new_hint)
-
-        self.credentials[username_hmac]["password"] = cache_hint
+        self.credentials[username_hmac]["password"] = new_hint
         return True
 
     def logout(self):
