@@ -100,32 +100,15 @@ class Auth:
     def logout(self):
         self.credentials = {}
 
-    def update_password(self, username, new_password):
+    def update_cache_pass(self, username, new_password):
         username_hmac = derive_app_user(username, self.app_salt)
         creds = self.credentials.get(username_hmac)
 
         if not creds:
             return False
 
-        hash_new_pass = hash_password(new_password)
+        new_password = change_password(username, password)
 
-        # UPDATE PERSISTENT STORAGE
-        updated_rows = []
-
-        with open(CREDENTIALS, "r", encoding="utf-8", newline="") as f:
-            reader = csv.DictReader(f)
-
-            for row in reader:
-                if row["username_hmac"] == username_hmac:
-                    row["password"] = hash_new_pass
-                updated_rows.append(row)
-
-        with open(CREDENTIALS, "w", encoding="utf-8", newline="") as f:
-            writer = csv.DictWriter(f, fieldnames=updated_rows[0].keys())
-            writer.writeheader()
-            writer.writerows(updated_rows)
-
-        # UPDATE CACHE
-        self.credentials[username_hmac]["password"] = hash_new_pass
+        self.credentials[username_hmac]["password"] = new_password
         return True
 
