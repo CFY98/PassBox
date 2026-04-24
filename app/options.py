@@ -25,33 +25,54 @@ def get_password():
     return intended_password
 
 
+# I/O LAYER
+def user_input():
+    domain_user = input("Please enter the username/email: ")
+    domain_password = get_password()
+    return (domain_user, domain_password)
+
+
+def get_domain():
+    return input("\nPlease add the name of the site: ")
+
+
+# GET_ID FOR VAULT ENTRIES
+def get_id(domain, session):
+    return derive_app_user(domain, session.hmac_key)
+
+
+# GET ENTRY
+def get_user_vault(session):
+    return vault(session.vault_file)
+
+
+# CHECK IF ENTRY EXISTS
+def entry_exists(fzf_id, data):
+    return fzf_id in data
+
+
+# BUILD VAULT ENTRY
+def build_entry(domain, username, password, enc_key):
+    return {
+        "domain": encryption(domain, enc_key),
+        "username": encryption(username, enc_key),
+        "password": encryption(password, enc_key),
+    }
+
+
 # OPTIONS
 def add_entry(session):
     while True:
-        domain = input("\nPlease add the name of the site: ")
-        domain_name = input("Please enter the username/email: ")
-        domain_password = get_password()
+        username, password = user_input()
+        domain = get_domain()
+        fzf_id = get_id(domain, session)
+        data = get_user_vault(session)
 
-        fzf_id = derive_app_user(domain, session.hmac_key)
-        data = vault(session.vault_file)
-
-        if fzf_id in data:
-            check = (
-                input("This entry already exists. Overwrite (y/n)? ").strip().casefold()
-            )
-            if check == "n":
+        if entry_exists(fzf_id, data):
+            if input("This entry already exists. Overwrite (y/n)? ").strip().casefold() == "n"
                 return False
 
-        data.update(
-            {
-                fzf_id: {
-                    "domain": encryption(domain, session.enc_key),
-                    "username": encryption(domain_name, session.enc_key),
-                    "password": encryption(domain_password, session.enc_key),
-                }
-            }
-        )
-
+        data.update({fzf_id: build_entry(domain, username, password, session.enc_key)})
         edit_vault(data, session.vault_file)
 
         if leave():
