@@ -5,8 +5,8 @@ import csv
 import pwinput
 
 # PASSBOX MODULES
-from lib.config import CREDENTIALS, APP_SALT
-from core.security import derive_app_user
+from lib.config import (CREDENTIALS, APP_SALT)
+from core.security import (derive_app_user, hash_password)
 
 # HINT UTILITIES
 def update_hint(username, hint):
@@ -95,6 +95,28 @@ def prompt_pass_change():
             case _:
                 print('Respond with "y" or "n"')
 
+
+def update_password(username, new_password):
+    app_salt = APP_SALT.read_bytes()
+    username_hmac = derive_app_user(username, app_salt)
+    hash_new_pass = hash_password(new_password)
+
+    updated_rows = []
+
+    with open(CREDENTIALS, "r", encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f)
+
+        for row in reader:
+            if row["username_hmac"] == username_hmac:
+                row["password"] = hash_new_pass
+            updated_rows.append(row)
+
+    with open(CREDENTIALS, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=updated_rows[0].keys())
+        writer.writeheader()
+        writer.writerows(updated_rows)
+
+    return hash_new_pass
 
 def change_password(username, password):
     while True:
