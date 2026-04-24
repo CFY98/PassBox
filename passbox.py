@@ -1,11 +1,16 @@
 # EXTERNAL LIBRARIES
 import pwinput
+import pyfiglet
 
 # PASSBOX MODULES
 from core.auth import Auth
 from app.main import main
 
 # LOGIN HELPERS
+def load_title():
+    print()
+    print(pyfiglet.figlet_format("PassBox", font="slant"))
+
 def load_auth():
     return Auth()
 
@@ -28,6 +33,7 @@ def register_hint():
 
 # LOGIN DAEMON
 def passbox():
+    load_title()
     auth = load_auth()
 
     while True:
