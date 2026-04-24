@@ -5,7 +5,6 @@ from app.main import main
 
 # PASSBOX MODULES
 from core.auth import Auth
-from core.utils import change_password
 
 
 # LOGIN HELPERS
@@ -14,7 +13,7 @@ def load_auth():
 
 
 def login_name():
-    return input("Please enter your username: ").strip()
+    return input("\nPlease enter your username: ").strip()
 
 
 def login_password():
@@ -22,11 +21,11 @@ def login_password():
 
 
 def registration():
-    return input("Register (y/n)? ").strip().casefold() == "y"
+    return input("\nRegister (y/n)? ").strip().casefold() == "y"
 
 
 def register_hint():
-    return input("Please enter a memorable hint: ")
+    return input("\nPlease enter a memorable hint: ")
 
 
 # LOGIN DAEMON
@@ -34,18 +33,13 @@ def passbox():
     auth = load_auth()
 
     while True:
-        max_attempts = 6
+        max_attempts = 4
         failures = 0
 
         username = login_name()
-
         while failures < max_attempts:
             password = login_password()
             status, session = auth.login(username, password)
-
-            if status == "valid":
-                main(session)
-                return
 
             if status == "invalid_user":
                 if not registration():
@@ -62,18 +56,19 @@ def passbox():
                 attempts_left = max_attempts - failures
 
                 if attempts_left == 0:
-                    print("Incorrect password, no attempts left.")
+                    print("\nIncorrect password, no attempts left.")
                     return
 
-                print(f"Please try again. Attempts left: {attempts_left}".upper())
+                print(f"\nPlease try again. Attempts left: {attempts_left}".upper())
+
+                if failures >= 1:
+                    print("\nHint:", auth.get_hint(username))
 
                 if failures >= 2:
-                    print(auth.get_hint(username))
-
-                if failures >= 4:
-                    new_password = change_password(username, password)
-                    if not new_password:
-                        return password
+                    new_password = auth.update_cache_pass(username, password)
+                    if new_password:
+                        password = new_password
+                    continue
 
             else:
                 main(session)
