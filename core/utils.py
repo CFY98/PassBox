@@ -66,8 +66,8 @@ def strong_password(length=15):
     symbols = random.choices(string.punctuation, k=2)
 
     total = length - 6
-    valid_password = string.ascii_letters + string.digits + string.punctuation
-    filler = random.choices(valid_password, k=total)
+    gen_password = string.ascii_letters + string.digits + string.punctuation
+    filler = random.choices(gen_password, k=total)
 
     characters = letters + numbers + symbols + filler
     random.shuffle(characters)
