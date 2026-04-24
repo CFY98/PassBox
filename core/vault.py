@@ -2,10 +2,12 @@
 import json
 from pathlib import Path
 
+
 # VAULT FUNCTIONS
 def edit_vault(value, vault_file):
     with open(vault_file, "w") as f:
         json.dump(value, f, indent=4)
+
 
 def vault(vault_file):
     path = Path(vault_file)
@@ -16,5 +18,3 @@ def vault(vault_file):
         except json.JSONDecodeError:
             return {}
     return {}
-
-

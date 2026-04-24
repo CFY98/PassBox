@@ -5,6 +5,7 @@ from app.main import main
 
 # PASSBOX MODULES
 from core.auth import Auth
+from core.utils import change_password
 
 
 # LOGIN HELPERS
@@ -70,7 +71,7 @@ def passbox():
                     print(auth.get_hint(username))
 
                 if failures >= 4:
-                    new_password = auth.change_password(username, password)
+                    new_password = change_password(username, password)
                     if not new_password:
                         return password
 
