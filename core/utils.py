@@ -4,7 +4,8 @@ import string
 
 import pwinput
 
-
+# HINT UTILITIES
+def update_hint(username, hint)
 # PASSWORD UTILITIES
 def valid_password(password):
     numbers = sum(c.isnumeric() for c in password)
@@ -38,5 +39,61 @@ def get_password():
     print(f"\nPassword suggestion: {suggest_pwd}")
     if pwinput.pwinput("\nUse suggestion (y/n)? ").strip().casefold() == "y":
         return suggest_pwd
-    intended_password = pwinput.pwinput("Please enter the intended password: ")
-    return intended_password
+    password = pwinput.pwinput("Please enter the password: ")
+    return password
+
+
+def confirm_new_pass():
+    return pwinput.pwinput("Please confirm your new password: ")
+
+
+def prompt_pass_change():
+    while True
+        change = input("Change password (y/n)? ").strip().casefold()
+        match change:
+            case "y":
+                return True
+            case "n":
+                return False
+            case _:
+                print('Respond with "y" or "n"')
+
+
+def change_password(username, password):
+    while True:
+        to_change = prompt_pass_change()
+        if not to_change:
+            print("The password was not updated")
+            return password
+
+        new_password = get_password()
+        if not new_password:
+            return password
+
+        if new_password == password:
+            print("Cannot be old password, please try again.")
+            continue
+
+        if new_password == "h3110 w0r1d!!":
+            update_password(username, new_password)
+            apply_hint_update(username)
+            print(
+                "Thanks for using this easter egg, the password was successfully updated."
+            )
+            return new_password
+
+        if not valid_password(new_password):
+            print(
+                "Password must be between 5-15 characters long, with a minimum of 2 letters, numbers and symbols."
+            )
+            continue
+
+        confirm = confirm_new_pass()
+        if confirm != new_password:
+            print("Passwords do not match. Try again.")
+            continue
+
+        update_password(username, new_password)
+        apply_hint_update(username)
+        print("The password was succesfully updated")
+        return new_password

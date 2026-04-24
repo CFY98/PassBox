@@ -1,14 +1,24 @@
 # EXTERNAL LIBRARIES
 import csv
 import os
+
 import pwinput
 
-# PASSBOX MODULES
-from .security import (gen_app_salt, _derive_master_key, derive_user_enc_key, derive_app_user, encryption, hash_password, verify_password)
-from .utils import (valid_password, strong_password)
-from lib.config import (CREDENTIALS, APP_SALT, VAULT_DIR)
-
 from app.session import Session
+from lib.config import APP_SALT, CREDENTIALS, VAULT_DIR
+
+# PASSBOX MODULES
+from .security import (
+    _derive_master_key,
+    derive_app_user,
+    derive_user_enc_key,
+    encryption,
+    gen_app_salt,
+    hash_password,
+    verify_password,
+)
+from .utils import strong_password, valid_password
+
 
 # AUTH CLASS
 class Auth:
@@ -20,7 +30,15 @@ class Auth:
         if not CREDENTIALS.exists():
             with open(CREDENTIALS, "w", encoding="utf-8", newline="") as f:
                 writer = csv.DictWriter(
-                    f, fieldnames=["username_hmac", "user_salt", "username", "password", "hint", "vault_file"]
+                    f,
+                    fieldnames=[
+                        "username_hmac",
+                        "user_salt",
+                        "username",
+                        "password",
+                        "hint",
+                        "vault_file",
+                    ],
                 )
                 writer.writeheader()
 
@@ -34,10 +52,10 @@ class Auth:
         creds = self.credentials.get(username_hmac)
         if not creds:
             return "invalid_user", None
-        
+
         if not verify_password(creds["password"], password):
             return "invalid_password", None
-        
+
         user_salt = bytes.fromhex(creds["user_salt"])
         master_key = _derive_master_key(password, user_salt)
         vault_file = creds["vault_file"]
@@ -46,7 +64,7 @@ class Auth:
     def get_hint(self, username):
         username_hmac = derive_app_user(username, self.app_salt)
         creds = self.credentials.get(username_hmac)
-        
+
         if not creds:
             return None
         return creds["hint"]
@@ -56,17 +74,23 @@ class Auth:
         if username_hmac in self.credentials:
             print("Username already exists.")
             return False
-        
+
         user_salt = os.urandom(16)
         master_key = _derive_master_key(password, user_salt)
-        user_enc_key = derive_user_enc_key(self.app_salt)
+        user_enc_key = derive_user_enc_key(master_key)
 
         vault_file = str(VAULT_DIR / f"{username_hmac[:16]}.json")
-        record = { "username_hmac": username_hmac, "user_salt": user_salt.hex(), "username": encryption(username, user_enc_key), "password": hash_password(password), "hint": hint, "vault_file": vault_file}
+        record = {
+            "username_hmac": username_hmac,
+            "user_salt": user_salt.hex(),
+            "username": encryption(username, user_enc_key),
+            "password": hash_password(password),
+            "hint": hint,
+            "vault_file": vault_file,
+        }
 
         with open(CREDENTIALS, "a", encoding="utf-8", newline="") as f:
-            writer = csv.DictWriter(
-                f, fieldnames=record.keys())
+            writer = csv.DictWriter(f, fieldnames=record.keys())
             writer.writerow(record)
 
         # UPDATE CACHE
@@ -76,16 +100,15 @@ class Auth:
     def logout(self):
         self.credentials = {}
 
-
-    def update_password(self, username, old_password, new_password):
+    def update_password(self, username, new_password):
         username_hmac = derive_app_user(username, self.app_salt)
         creds = self.credentials.get(username_hmac)
-        
+
         if not creds:
             return False
-        
+
         hash_new_pass = hash_password(new_password)
-        
+
         # UPDATE PERSISTENT STORAGE
         updated_rows = []
 
@@ -96,7 +119,7 @@ class Auth:
                 if row["username_hmac"] == username_hmac:
                     row["password"] = hash_new_pass
                 updated_rows.append(row)
-        
+
         with open(CREDENTIALS, "w", encoding="utf-8", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=updated_rows[0].keys())
             writer.writeheader()
@@ -109,7 +132,7 @@ class Auth:
     def update_hint(self, username, hint):
         username_hmac = derive_app_user(username, self.app_salt)
         creds = self.credentials.get(username_hmac)
-       
+
         if not creds:
             return False
 
@@ -124,7 +147,7 @@ class Auth:
                     row["hint"] = hint
 
                 updated_rows.append(row)
-        
+
         with open(CREDENTIALS, "w", encoding="utf-8", newline="") as f:
             writer = csv.DictWriter(f, fieldnames=updated_rows[0].keys())
             writer.writeheader()
@@ -137,7 +160,7 @@ class Auth:
     def ask_update_hint(self):
         if pwinput.pwinput("Update hint (y/n)? ").strip().casefold() != "y":
             return None
-        
+
         hint = input("Enter hint: ").strip()
         return hint if hint else None
 
@@ -158,12 +181,14 @@ class Auth:
                     end="",
                 )
 
-                use_suggestion = pwinput.pwinput("Use suggestion (y/n)? ").strip().casefold()
+                use_suggestion = (
+                    pwinput.pwinput("Use suggestion (y/n)? ").strip().casefold()
+                )
                 if use_suggestion == "y":
-                    self.update_password(username, password, suggestion)
+                    self.update_password(username, suggestion)
                     self.apply_hint_update(username)
                     return suggestion
-                
+
                 update = pwinput.pwinput("Please enter new password: ")
 
                 if update == password:
@@ -171,7 +196,7 @@ class Auth:
                     continue
 
                 if update == "h3110 w0r1d!!":
-                    self.update_password(username, password, update)
+                    self.update_password(username, update)
                     self.apply_hint_update(username)
                     print(
                         "Thanks for using this easter egg, the password was successfully updated."
@@ -189,7 +214,7 @@ class Auth:
                     print("Passwords do not match. Try again.")
                     continue
 
-                self.update_password(username, password, update)
+                self.update_password(username, update)
                 self.apply_hint_update(username)
                 print("The password was succesfully updated")
                 return update
