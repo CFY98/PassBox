@@ -1,7 +1,14 @@
+argon2-cffi==25.1.0
+argon2-cffi-bindings==25.1.0
 cffi==2.0.0
 cryptography==46.0.7
+iniconfig==2.3.0
 numpy==2.4.4
+packaging==26.1
+pluggy==1.6.0
 pwinput==1.0.3
 pycparser==3.0
+Pygments==2.20.0
+pytest==9.0.3
 python-dateutil==2.9.0.post0
 six==1.17.0
