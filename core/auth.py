@@ -4,7 +4,7 @@ import os
 import pwinput
 
 # PASSBOX MODULES
-from .security import (derive_enc_key, gen_app_salt, _derive_master_key, derive_user_enc_key, derive_app_user, encryption, hash_password, verify_password)
+from .security import (gen_app_salt, _derive_master_key, derive_user_enc_key, derive_app_user, encryption, hash_password, verify_password)
 from .utils import (valid_password, strong_password)
 from lib.config import (CREDENTIALS, APP_SALT, VAULT_DIR)
 
@@ -42,11 +42,6 @@ class Auth:
         master_key = _derive_master_key(password, user_salt)
         master_key = _derive_master_key(password, user_salt)
 
-        enc_key = derive_enc_key(master_key)
-
-        print(type(enc_key))
-        print(len(enc_key))
-        print(enc_key)
         vault_file = creds["vault_file"]
         return "valid", Session(master_key, vault_file)
 

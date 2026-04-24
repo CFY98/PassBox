@@ -20,4 +20,4 @@ class Session:
     def enc_key(self):
         if self._enc_key is None:
             self._enc_key = derive_enc_key(self.master_key)
-        return self._hmac_key
+        return self._enc_key

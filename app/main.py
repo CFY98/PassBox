@@ -15,8 +15,8 @@ def main(session):
         print()
         try:
             if prompt == "6":
-                session.auth.logout()
-                break
+                print("Logging out...")
+                return
             options_map[prompt](session)
         except KeyError:
             print("\nPlease refer to list of options")
