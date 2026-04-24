@@ -17,7 +17,7 @@ from .security import (
     hash_password,
     verify_password,
 )
-from .utils import strong_password, valid_password
+from .utils import change_password, update_hint
 
 
 # AUTH CLASS
@@ -97,9 +97,6 @@ class Auth:
         self.credentials[username_hmac] = record
         return True
 
-    def logout(self):
-        self.credentials = {}
-
     def update_cache_pass(self, username, new_password):
         username_hmac = derive_app_user(username, self.app_salt)
         creds = self.credentials.get(username_hmac)
@@ -107,9 +104,9 @@ class Auth:
         if not creds:
             return False
 
-        new_password = change_password(username, password)
+        cache_pass = change_password(username, new_password)
 
-        self.credentials[username_hmac]["password"] = new_password
+        self.credentials[username_hmac]["password"] = cache_pass
         return True
 
     def update_cache_hint(self, username, new_hint):
@@ -119,7 +116,10 @@ class Auth:
         if not creds:
             return False
 
-        new_hint = update_hint(username, hint)
+        cache_hint = update_hint(username, new_hint)
 
-        self.credentials[username_hmac]["password"] = new_hint
+        self.credentials[username_hmac]["password"] = cache_hint
         return True
+
+    def logout(self):
+        self.credentials = {}
