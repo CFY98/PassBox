@@ -101,7 +101,7 @@ def update_entry(session):
                 data.update(
                     {fzf_id: build_entry(domain, username, password, session.enc_key)}
                 )
-        if leave():
+            leave()
             break
 
         data.pop(fzf_id)
