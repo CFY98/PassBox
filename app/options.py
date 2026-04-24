@@ -1,34 +1,38 @@
-# EXTERNAL LIBRARIES 
+# EXTERNAL LIBRARIES
 import json
 import re
+
 import pwinput
 
 # PASSBOX MODULES
-from core.security import (decryption, encryption, derive_app_user)
-from core.vault import (vault, edit_vault)
+from core.security import decryption, derive_app_user, encryption
 from core.utils import strong_password
+from core.vault import edit_vault, vault
+
 
 # CONTINUE LOGIC
-def keep_going(session):
+def keep_going():
     return input("\nReturn to Main Menu (y/n)? ").strip().casefold() == "y"
 
+
 # PASSWORD SUGGESTER
-def get_password(session):
+def get_password():
     suggest_pwd = strong_password(15)
-    
+
     print(f"\nPassword suggestion: {suggest_pwd}")
     if pwinput.pwinput("\nUse suggestion (y/n)? ").strip().casefold() == "y":
         return suggest_pwd
     intended_password = pwinput("Please enter the intended password: ")
     return intended_password
 
+
 # OPTIONS
 def add_entry(session):
     while True:
         domain = input("\nPlease add the name of the site: ")
         domain_name = input("Please enter the username/email: ")
-        domain_password = get_password(session)
-        
+        domain_password = get_password()
+
         fzf_id = derive_app_user(domain, session.hmac_key)
         data = vault(session.vault_file)
 
@@ -50,9 +54,10 @@ def add_entry(session):
         )
 
         edit_vault(data, session.vault_file)
-        
-        if keep_going(session):
+
+        if keep_going():
             break
+
 
 def view_entries(session):
     while True:
@@ -61,27 +66,28 @@ def view_entries(session):
             print("Vault is empty\n")
             break
 
-        for domain, creds in unlock.items():
+        for _, creds in unlock.items():
             print("Site:", decryption(creds["domain"], session.enc_key))
             print("Username:", decryption(creds["username"], session.enc_key))
             print("Password:", decryption(creds["password"], session.enc_key))
             print("-" * 29)
 
-        if keep_going(session):
+        if keep_going():
             break
+
 
 def update_entry(session):
     while True:
         choice = input("\nPlease enter the name of the entry you want to update: ")
         new_name = input("Please enter the new username/email: ")
-        new_password = get_password(session)
+        new_password = get_password()
 
         fzf_id = derive_app_user(choice, session.hmac_key)
         entries = vault(session.vault_file)
-        
+
         if fzf_id not in entries:
             print("Entry not found")
-            if keep_going(session):
+            if keep_going():
                 break
         entries.pop(fzf_id)
         entries.update(
@@ -95,9 +101,10 @@ def update_entry(session):
         )
 
         edit_vault(entries, session.vault_file)
-        
-        if keep_going(session):
+
+        if keep_going():
             break
+
 
 def delete_entry(session):
     while True:
@@ -112,21 +119,22 @@ def delete_entry(session):
             print("\nEntry successfully deleted")
         else:
             print("\nEntry not found")
-        
-        if keep_going(session):
+
+        if keep_going():
             break
+
 
 def search_vault(session):
     while True:
         seek_entry = input("\nSearch: ").strip()
         print()
-    
+
         storage = vault(session.vault_file)
         found = False
-        
+
         for key, creds in storage.items():
             domain_key = decryption(creds["domain"], session.enc_key)
-        
+
             if re.search(seek_entry, domain_key, re.IGNORECASE):
                 print("---------- RESULTS ----------\n")
                 print("Site:", domain_key)
@@ -138,14 +146,15 @@ def search_vault(session):
         if not found:
             print("Entry not found")
 
-        if keep_going(session):
+        if keep_going():
             break
+
 
 # FUNCTION MAP
 options_map = {
-        "1": add_entry,
-        "2": view_entries,
-        "3": update_entry,
-        "4": delete_entry,
-        "5": search_vault,
-        }
+    "1": add_entry,
+    "2": view_entries,
+    "3": update_entry,
+    "4": delete_entry,
+    "5": search_vault,
+}
