@@ -14,36 +14,23 @@ PassBox is a CLI password manager with a hybrid secruity model to explore how se
 
 ## 💡 Security Model
 ```
-                 ENTROPY LAYER
+ENTROPY LAYER
 
-                  os.urandom()
-                       |
-         user_salt (Randomised per user)
-    app_salt (global system salt, generated once)
+os.urandom() -> user_salt (randomised per user), app_salt(global system salt)
 
 ----------------------------------------------------
 
-                    ID LAYER
+ID LAYER
 
-              username + app_salt
-                       │
-                       │ HMAC-SHA256
-                       │
-          username_hmac (stable user ID)
+username + app_salt -> HMAC-SHA256 -> username_hmac (stable user ID)
 
 ----------------------------------------------------
 
-              KEY DERIVATION LAYER
-                 master_password
-                       │   
-                       │ Argon2id (KDF)
-                       │
-                   master_key
-                       │   
-                       │ SHA256 key derivation
-                       │
-                       ├── enc_key → base64(Fernet-compatible key)
-                       └── hmac_key → SHA256-derived signing key
+KEY DERIVATION LAYER
+
+master_password -> Argon2id (KDF) -> master_key -> SHA256 key derivation -> 
+[enc_key -> base64(Fernet-compatible key)], [hmac_key -> SHA256-derived signing key]
+
 ```
 - **Vault entries**: domain names, usernames and passwords are encrypted with Fernet
 - **Credentials**: usernames encrypted with Fernet, passwords stord as Argon2id hashes for verification, hints as plain text (non-sensitive metadata)
@@ -54,7 +41,7 @@ PassBox is a CLI password manager with a hybrid secruity model to explore how se
 
 PassBox uses a runtime session-based design:
 - `Auth` validates credentials and creates a `Session`
-- `Session` derives and stores cryptographic kesy
+- `Session` derives and stores cryptographic keys
 - `main.py` operates on active user session
 
 ## 🛠️ Technologies
