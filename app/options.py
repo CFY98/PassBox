@@ -2,9 +2,9 @@
 import re
 
 # PASSBOX MODULES
-from core.security import (decryption, derive_app_user, encryption)
+from core.security import decryption, derive_app_user, encryption
 from core.utils import get_password
-from core.vault import (edit_vault, vault)
+from core.vault import edit_vault, vault
 
 
 # OPTIONS MENU UTILITIES
@@ -74,12 +74,12 @@ def add_entry(session):
 
 def view_entries(session):
     while True:
-        unlock = vault(session.vault_file)
-        if not unlock:
+        data = vault(session.vault_file)
+        if not data:
             print("Vault is empty\n")
             break
 
-        for _, creds in unlock.items():
+        for _, creds in data.items():
             print("Site:", decryption(creds["domain"], session.enc_key))
             print("Username:", decryption(creds["username"], session.enc_key))
             print("Password:", decryption(creds["password"], session.enc_key))
