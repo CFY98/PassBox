@@ -33,7 +33,7 @@ def user_input():
 
 
 def get_domain():
-    return input("\nPlease add the name of the site: ")
+    return input("\nPlease enter the name of the site: ")
 
 
 # GET_ID FOR VAULT ENTRIES
@@ -63,8 +63,8 @@ def build_entry(domain, username, password, enc_key):
 # OPTIONS
 def add_entry(session):
     while True:
-        username, password = user_input()
         domain = get_domain()
+        username, password = user_input()
         fzf_id = get_id(domain, session)
         data = get_user_vault(session)
 
@@ -98,29 +98,21 @@ def view_entries(session):
 
 def update_entry(session):
     while True:
-        choice = input("\nPlease enter the name of the entry you want to update: ")
-        new_name = input("Please enter the new username/email: ")
-        new_password = get_password()
+        domain = get_domain()
+        username, password = user_input()
+        fzf_id = get_id(domain, session)
+        data = get_user_vault(session)
 
-        fzf_id = derive_app_user(choice, session.hmac_key)
-        entries = vault(session.vault_file)
-
-        if fzf_id not in entries:
-            print("Entry not found")
+        if entry_exists(fzf_id, data):
+            if input("Entry not found, add to vault (y/n)? ").strip().casefold() == "y":
+                data.update({fzf_id: build_entry(domain, username, password, session.enc_key)})
             if leave():
                 break
-        entries.pop(fzf_id)
-        entries.update(
-            {
-                fzf_id: {
-                    "domain": encryption(choice, session.enc_key),
-                    "username": encryption(new_name, session.enc_key),
-                    "password": encryption(new_password, session.enc_key),
-                }
-            }
-        )
 
-        edit_vault(entries, session.vault_file)
+        data.pop(fzf_id)
+        data.update({fzf_id: build_entry(domain, username, password, session.enc_key)})
+
+        edit_vault(data, session.vault_file)
 
         if leave():
             break
