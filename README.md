@@ -1,38 +1,70 @@
 # 🔐 PassBox
 
-PassBox is a CLI password manager with a hybrid secruity model to explore how secure systems work. It separates data identification (via HMAC hashing) from data protection (via encryption), and derives all keys from the user's master password.
+PassBox is a CLI password manager with a hybrid secruity model to explore how secure system design and cryptographic separation of concerns. It features a hybrid model where authentication, session state, and encryption responisibilities are strictly separated.
 
 ## 🧠 Features
 
 - Per-user encrypted vaults with unique vault files
-- Argon2id key derivation for vault and credential encryption
+- Argon2id key derivation for master password
 - HMAC-based stable entry IDs for lookup, update, and removal
-- Fernet encryption to protect all sensitive data
+- Fernet encryption for sensitive vault and credential data
 - Decryption only occurs at display time
-- Fuzzy search on decrypted domain values
+- Fuzzy search on decrypted domain name values
 - CLI-based interface
 
 ## 💡 Security Model
-
 ```
-master_password -> Argon2id -> vault_key -> Fernet -> encrypted vault entries
-master_password -> Argon2id -> creds_key -> Fernet -> encrypted credentials
-vault_key -> SHA256 -> hmac_key -> HMAC -> stable entry IDs
+                 ENTROPY LAYER
+
+                  os.urandom()
+                       |
+         user_salt (per-user randomness)
+    app_salt (global system salt, generated once)
+
+----------------------------------------------------
+
+                    ID LAYER
+
+              username + app_salt
+                       │
+                       │ HMAC-SHA256
+                       │
+          username_hmac (stable user ID)
+
+----------------------------------------------------
+
+              KEY DERIVATION LAYER
+                 master_password
+                       │   
+                       │ Argon2id (KDF)
+                       │
+                   master_key
+                       │   
+                       │ SHA256 key expansion
+                       │
+                       ├── enc_key → base64(Fernet-compatible key)
+                       └── hmac_key → SHA256-derived signing key
 ```
 - **Vault entries**: domain names, usernames and passwords are encrypted with Fernet
-- **Credentials**: usernames encrypted with Fernet, passwords hashed with Argon2id, hints as plain text
-- **Entry IDs**: domain names hashed with HMAC-SHA256 for stable lookup without exposing plain text
+- **Credentials**: usernames encrypted with Fernet, passwords hashed with Argon2id, hints as plain text (non-sensitive metadata)
+- **Entry IDs**: domain names hashed with HMAC-SHA256 for stable lookup without exposing raw values
 - **Per-user vaults**: each user has an isolated vault file which is encrypted with a key to their master password
+
+## Session Model
+
+PassBox uses a runtime session-based design:
+- `Auth` validates credentials and creates a `Session`
+- `Session` derives and stores cryptographic kesy
+- `main.py` operates on active user session
 
 ## 🛠️ Technologies
 
 - **Python**: Main programming language
 - **argon2-cffi**: Argon2id password hashing and key derivation
-- **hmac + hashlib (built-in)**: HMAC-SHA256 for stable entry IDs
-- **cryptography**: Fernet symmetric encryption
+- **hmac / hashlib (built-in)**: HMAC-SHA256 for stable entry IDs
+- **cryptography (Fernet)**: symmetric encryption
 - **json**: encrypted data storage
 - **csv**: credential storage
-- **pandas**: credential updates
 
 ## 🚀 Getting Started
 
@@ -85,16 +117,17 @@ python passbox.py
 PassBox/
 ├── passbox.py           # Login entry point
 ├── app/
-│   ├── main.py          # Menu logic
+│   ├── main.py          # Session lifecycle 
 │   ├── options.py       # User session and derived keys
-│   └── session.py       # Interface options and function map
+│   └── session.py       # Runtime session object with lazy load methods
 ├── core/
-│   ├── auth.py          # Login, registration, password, and hint logic
-│   ├── security.py      # Encryption, hashing, key derivation
+│   ├── auth.py          # Login, user registration, and hint logic
+│   ├── security.py      # Encryption, salt generation, hashing, and key derivation
+│   ├── utils.py         # Password suggestion and validation logic
 │   └── vault.py         # Vault load and save logic
 ├── lib/
 │   └── config.py.       # Path configuration
-├── data/                # Runtime data (excluded from version control)
+├── data/                # Runtime data (ignored by git)
 │   ├── credentials.csv    
 │   ├── creds.salt
 │   ├── hmac_user.key

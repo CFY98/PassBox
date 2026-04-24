@@ -1,7 +1,6 @@
 cffi==2.0.0
 cryptography==46.0.7
 numpy==2.4.4
-pandas==3.0.2
 pwinput==1.0.3
 pycparser==3.0
 python-dateutil==2.9.0.post0
