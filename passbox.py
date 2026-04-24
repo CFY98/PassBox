@@ -7,6 +7,7 @@ from app.main import main
 from core.auth import Auth
 
 
+# LOGIN HELPERS
 def load_auth():
     return Auth()
 
@@ -27,11 +28,6 @@ def register_hint():
     return input("Please enter a memorable hint: ")
 
 
-def enter_passbox(session):
-    print("\nEntering PassBox...")
-    main(session)
-
-
 # LOGIN DAEMON
 def passbox():
     auth = load_auth()
@@ -47,7 +43,7 @@ def passbox():
             status, session = auth.login(username, password)
 
             if status == "success":
-                enter_passbox(session)
+                main(session)
                 return
 
             if status == "invalid_user":
@@ -57,7 +53,7 @@ def passbox():
                 hint = register_hint()
                 if auth.register(username, password, hint):
                     _, session = auth.login(username, password)
-                    enter_passbox(session)
+                    main(session)
                 return
 
             elif status == "invalid_password":
@@ -79,9 +75,9 @@ def passbox():
                         return password
 
             else:
-                enter_passbox(session)
+                main(session)
                 return
 
 
-if __name__ == "__main__":
+if __name__ == "__passbox__":
     passbox()
