@@ -1,11 +1,35 @@
 # EXTERNAL IMPORTS
 import random
 import string
-
+import csv
 import pwinput
 
+# PASSBOX MODULES
+from lib.config import CREDENTIALS, APP_SALT
+from core.security import derive_app_user
+
 # HINT UTILITIES
-def update_hint(username, hint)
+def update_hint(username, hint):
+    app_salt = APP_SALT.read_bytes()
+    username_hmac = derive_app_user(username, app_salt)
+
+    # UPDATE PERSISTENT STORAGE
+    updated_rows = []
+
+    with open(CREDENTIALS, "r", encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(f)
+
+        for row in reader:
+            if row["username_hmac"] == username_hmac:
+                row["hint"] = hint
+
+            updated_rows.append(row)
+
+    with open(CREDENTIALS, "w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=updated_rows[0].keys())
+        writer.writeheader()
+        writer.writerows(updated_rows)
+
 # PASSWORD UTILITIES
 def valid_password(password):
     numbers = sum(c.isnumeric() for c in password)
