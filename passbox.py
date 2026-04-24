@@ -22,7 +22,7 @@ def passbox():
                 hint = input("Please enter a memorable hint: ")
                 if auth.register(username, password, hint):
                     status, session = auth.login(username, password)
-                    print("Loading Vault --->")
+                    print("\nEntering PassBox...")
                     main(session)
             return
 
@@ -41,7 +41,7 @@ def passbox():
                 print("Incorrect password, no attempts left.")
                 return
         else:
-            print("Loading Vault --->")
+            print("\nEntering PassBox...")
             main(session)
             return
 

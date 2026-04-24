@@ -15,7 +15,7 @@ def main(session):
         print()
         try:
             if prompt == "6":
-                print("Logging out...")
+                print("Exiting PassBox...\n")
                 return
             options_map[prompt](session)
         except KeyError:
