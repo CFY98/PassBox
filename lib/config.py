@@ -12,11 +12,5 @@ VAULT_DIR.mkdir(exist_ok=True)
 
 # DATA FILE PATHS
 CREDENTIALS = DATA_DIR / "credentials.csv"
-APP_SALT_PATH = DATA_DIR / "app.salt"
-
-def get_app_salt():
-    return APP_SALT_PATH.read_bytes()
-
-APP_SALT = get_app_salt()
-
+APP_SALT = DATA_DIR / "app.salt"
 HMAC_USER = DATA_DIR / "hmac_user.key"
