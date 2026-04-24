@@ -34,6 +34,17 @@ def entry_exists(fzf_id, data):
     return fzf_id in data
 
 
+def entry_not_exist():
+    return input("Entry not found, add to vault (y/n)? ").strip().casefold() == "y"
+
+
+def overwrite_entry():
+    return (
+        input("\nThis entry already exists. Overwrite (y/n)? ").strip().casefold()
+        == "y"
+    )
+
+
 def build_entry(domain, username, password, enc_key):
     return {
         "domain": encryption(domain, enc_key),
@@ -51,10 +62,7 @@ def add_entry(session):
         data = get_user_vault(session)
 
         if entry_exists(fzf_id, data):
-            if (
-                input("This entry already exists. Overwrite (y/n)? ").strip().casefold()
-                == "n"
-            ):
+            if not overwrite_entry():
                 return False
 
         data.update({fzf_id: build_entry(domain, username, password, session.enc_key)})
@@ -89,7 +97,7 @@ def update_entry(session):
         data = get_user_vault(session)
 
         if not entry_exists(fzf_id, data):
-            if input("Entry not found, add to vault (y/n)? ").strip().casefold() == "y":
+            if entry_not_exist():
                 data.update(
                     {fzf_id: build_entry(domain, username, password, session.enc_key)}
                 )
