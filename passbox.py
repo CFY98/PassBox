@@ -1,29 +1,49 @@
-# EXTERNAL LIBRARIES 
+# EXTERNAL LIBRARIES
 import pwinput
+
+from app.main import main
 
 # PASSBOX MODULES
 from core.auth import Auth
-from app.main import main   
+
+
+def load_auth():
+    return Auth()
+
+
+def login_details():
+    login_name = input("Please enter your username: ").strip()
+    login_password = pwinput.pwinput("Please enter your password: ").strip()
+    return (login_name, login_password)
+
+
+def registration():
+    return input("Register (y/n)? ").strip().casefold() == "y"
+
+
+def register_hint():
+    return input("Please enter a memorable hint: ")
+
 
 # LOGIN DAEMON
 def passbox():
     max_attempts = 6
     failures = 0
 
-    auth = Auth()
-    username = input("Please enter your username: ").strip()
+    auth = load_auth()
+    username, password = login_details()
 
     while failures < max_attempts:
-        password = pwinput.pwinput("Please enter your password: ").strip()
         status, session = auth.login(username, password)
 
         if status == "invalid_user":
-            if input("Register (y/n)? ").strip().casefold() == "y":
-                hint = input("Please enter a memorable hint: ")
-                if auth.register(username, password, hint):
-                    status, session = auth.login(username, password)
-                    print("\nEntering PassBox...")
-                    main(session)
+            if not registration():
+                return
+            hint = register_hint()
+            if auth.register(username, password, hint):
+                _, session = auth.login(username, password)
+                print("\nEntering PassBox...")
+                main(session)
             return
 
         elif status == "invalid_password":
@@ -44,6 +64,7 @@ def passbox():
             print("\nEntering PassBox...")
             main(session)
             return
+
 
 if __name__ == "__main__":
     passbox()
