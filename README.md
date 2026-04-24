@@ -37,7 +37,7 @@ master_password -> Argon2id (KDF) -> master_key -> SHA256 key derivation ->
 - **Vault Entry IDs**: domain names hashed with HMAC-SHA256 for stable lookup without exposing raw values
 - **Per-user vaults**: each user has an isolated vault file which is encrypted with a key to their master password
 
-## Session Model
+## 🪪 Session Model
 
 PassBox uses a runtime session-based design:
 - `Auth` validates credentials and creates a `Session`
@@ -85,13 +85,13 @@ pip install -r requirements.txt
 python passbox.py
 ```
 
-🔹 The script will perform its encryption routine with user input as defined in the code.
+The script will perform its encryption routine with user input as defined in the code.
 
 ##  ⚠️ Disclaimer
 
 > PassBox is a learning project designed to explore cryptographic concepts and secure system design. It is **not** intended for production use or as a replacement for established password managers.
 
-## ⏱️ Future Improvements
+## 🕛 Future Improvements
 
 - Session locking after repeated failures
 - Flask implementation
