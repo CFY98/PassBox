@@ -117,20 +117,17 @@ def update_entry(session):
         if leave():
             break
 
-
 def delete_entry(session):
     while True:
-        delete = input("\nPlease enter the name of the entry you want to delete: ")
+        domain = get_domain()
+        fzf_id = get_id(domain, session)
+        data = get_user_vault(session)
 
-        fzf_id = derive_app_user(delete, session.hmac_key)
-        target = vault(session.vault_file)
-
-        if fzf_id in target:
-            target.pop(fzf_id)
-            edit_vault(target, session.vault_file)
+        if entry_exists(fzf_id, data):
+            data.pop(fzf_id)
+            edit_vault(data, session.vault_file)
             print("\nEntry successfully deleted")
-        else:
-            print("\nEntry not found")
+        print("\nEntry not found")
 
         if leave():
             break
@@ -144,7 +141,7 @@ def search_vault(session):
         storage = vault(session.vault_file)
         found = False
 
-        for key, creds in storage.items():
+        for _, creds in storage.items():
             domain_key = decryption(creds["domain"], session.enc_key)
 
             if re.search(seek_entry, domain_key, re.IGNORECASE):
