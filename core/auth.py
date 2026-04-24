@@ -129,15 +129,3 @@ class Auth:
         self.credentials[username_hmac]["password"] = hash_new_pass
         return True
 
-    def ask_update_hint(self):
-        if pwinput.pwinput("Update hint (y/n)? ").strip().casefold() != "y":
-            return None
-
-        hint = input("Enter hint: ").strip()
-        return hint if hint else None
-
-    def apply_hint_update(self, username):
-        new_hint = self.ask_update_hint()
-        if not new_hint:
-            return False
-        self.update_hint(username, new_hint)

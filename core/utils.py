@@ -30,6 +30,19 @@ def update_hint(username, hint):
         writer.writeheader()
         writer.writerows(updated_rows)
 
+def ask_update_hint():
+    if pwinput.pwinput("Update hint (y/n)? ").strip().casefold() != "y":
+        return None
+
+    hint = input("Enter hint: ").strip()
+    return hint if hint else None
+
+def apply_hint_update(username):
+    new_hint = ask_update_hint()
+    if not new_hint:
+        return False
+    update_hint(username, new_hint)
+
 # PASSWORD UTILITIES
 def valid_password(password):
     numbers = sum(c.isnumeric() for c in password)
