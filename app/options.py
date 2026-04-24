@@ -11,7 +11,7 @@ from core.vault import edit_vault, vault
 
 
 # CONTINUE LOGIC
-def keep_going():
+def leave():
     return input("\nReturn to Main Menu (y/n)? ").strip().casefold() == "y"
 
 
@@ -55,7 +55,7 @@ def add_entry(session):
 
         edit_vault(data, session.vault_file)
 
-        if keep_going():
+        if leave():
             break
 
 
@@ -72,7 +72,7 @@ def view_entries(session):
             print("Password:", decryption(creds["password"], session.enc_key))
             print("-" * 29)
 
-        if keep_going():
+        if leave():
             break
 
 
@@ -87,7 +87,7 @@ def update_entry(session):
 
         if fzf_id not in entries:
             print("Entry not found")
-            if keep_going():
+            if leave():
                 break
         entries.pop(fzf_id)
         entries.update(
@@ -102,7 +102,7 @@ def update_entry(session):
 
         edit_vault(entries, session.vault_file)
 
-        if keep_going():
+        if leave():
             break
 
 
@@ -120,7 +120,7 @@ def delete_entry(session):
         else:
             print("\nEntry not found")
 
-        if keep_going():
+        if leave():
             break
 
 
@@ -146,7 +146,7 @@ def search_vault(session):
         if not found:
             print("Entry not found")
 
-        if keep_going():
+        if leave():
             break
 
 
