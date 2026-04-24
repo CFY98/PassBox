@@ -80,5 +80,5 @@ def passbox():
                 return
 
 
-if __name__ == "__passbox__":
+if __name__ == "__main__":
     passbox()
