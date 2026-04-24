@@ -15,6 +15,7 @@ from .security import (
     hash_password,
     verify_password,
 )
+from .utils import apply_hint_update, change_password
 
 
 # AUTH CLASS
@@ -94,24 +95,29 @@ class Auth:
         self.credentials[username_hmac] = record
         return True
 
-    def update_cache_pass(self, username, new_password):
+    def update_cache_pass(self, username, password):
         username_hmac = derive_app_user(username, self.app_salt)
         creds = self.credentials.get(username_hmac)
 
         if not creds:
             return False
 
-        self.credentials[username_hmac]["password"] = new_password
-        return True
+        cache_pass = change_password(username, password)
+        if cache_pass != password:
+            self.credentials[username_hmac]["password"] = hash_password(cache_pass)
+            self.update_cache_hint(username)
+        return cache_pass
 
-    def update_cache_hint(self, username, new_hint):
+    def update_cache_hint(self, username):
         username_hmac = derive_app_user(username, self.app_salt)
         creds = self.credentials.get(username_hmac)
 
         if not creds:
             return False
 
-        self.credentials[username_hmac]["password"] = new_hint
+        cache_hint = apply_hint_update(username)
+        if cache_hint:
+            self.credentials[username_hmac]["hint"] = cache_hint
         return True
 
     def logout(self):
