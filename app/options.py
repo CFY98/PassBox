@@ -1,5 +1,4 @@
 # EXTERNAL LIBRARIES
-import json
 import re
 
 import pwinput
