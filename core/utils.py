@@ -6,14 +6,20 @@ import string
 import pwinput
 
 # PASSBOX MODULES
-from core.security import (derive_app_user, hash_password)
-from lib.config import (APP_SALT, CREDENTIALS)
+from core.security import derive_app_user, hash_password
+from lib.config import APP_SALT, CREDENTIALS
+
+
+# GET CREDS
+def grab_creds(username):
+    app_salt = APP_SALT.read_bytes()
+    username_hmac = derive_app_user(username, app_salt)
+    return username_hmac
 
 
 # HINT UTILITIES
 def update_hint(username, hint):
-    app_salt = APP_SALT.read_bytes()
-    username_hmac = derive_app_user(username, app_salt)
+    username_hmac = grab_creds(username)
 
     updated_rows = []
 
@@ -106,8 +112,7 @@ def prompt_pass_change():
 
 
 def update_password(username, new_password):
-    app_salt = APP_SALT.read_bytes()
-    username_hmac = derive_app_user(username, app_salt)
+    username_hmac = grab_creds(username)
     hash_new_pass = hash_password(new_password)
 
     updated_rows = []
