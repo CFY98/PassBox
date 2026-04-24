@@ -126,7 +126,7 @@ PassBox/
 │   ├── utils.py         # Password suggestion and validation logic
 │   └── vault.py         # Vault load and save logic
 ├── lib/
-│   └── config.py.       # Path configuration
+│   └── config.py        # Path configuration
 ├── data/                # Runtime data (ignored by git)
 │   ├── credentials.csv    
 │   ├── app.salt
