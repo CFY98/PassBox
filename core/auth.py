@@ -40,8 +40,6 @@ class Auth:
         
         user_salt = bytes.fromhex(creds["user_salt"])
         master_key = _derive_master_key(password, user_salt)
-        master_key = _derive_master_key(password, user_salt)
-
         vault_file = creds["vault_file"]
         return "valid", Session(master_key, vault_file)
 
