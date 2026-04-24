@@ -28,7 +28,7 @@ def main(session):
         print()
         try:
             if prompt == "6":
-                print("Exiting PassBox...\n")
+                print("\033[3mExiting PassBox...\033[0m\n")
                 return
             options_map[prompt](session)
         except KeyError:
