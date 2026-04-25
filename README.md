@@ -1,6 +1,6 @@
 # 🔐 PassBox
 
-PassBox is a CLI password manager with a hybrid secruity model to explore how secure system design and cryptographic separation of concerns. It features a hybrid model where authentication, session state, and encryption responisibilities are strictly separated.
+PassBox is a CLI password manager with a hybrid security model to explore how secure system design and cryptographic separation of concerns. It features a hybrid model where authentication, session state, and encryption responisibilities are strictly separated.
 
 ## 🧠 Features
 
@@ -87,9 +87,9 @@ python passbox.py
 
 - The script will perform its encryption routine with user input as defined in the code.
 - For the unit tests to work, there must be at least 1 user account. Please see the recommended account when conducting tests.
-- Recommended app username: test
-- Recommended app password: test
-- Recommended domain name: test.com
+> Recommended app username: test
+> Recommended app password: test
+> Recommended domain name: test.com
 
 ##  ⚠️ Disclaimer
 
@@ -131,7 +131,7 @@ PassBox/
 │   ├── app.salt
 │   └── vaults/
 ├── requirements.txt     # Non-built-in Python libraries
-├── README               # This file
+├── README.md            # This file
 └── LICENSE              # MIT License
 ```
 > **Note:** The `data` directory is excluded from version control. It is automatically created on first run.
