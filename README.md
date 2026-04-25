@@ -85,7 +85,11 @@ pip install -r requirements.txt
 python passbox.py
 ```
 
-The script will perform its encryption routine with user input as defined in the code.
+- The script will perform its encryption routine with user input as defined in the code.
+- For the unit tests to work, there must be at least 1 user account. Please see the recommended account when conducting tests.
+- Recommended app username: test
+- Recommended app password: test
+- Recommended domain name: test.com
 
 ##  ⚠️ Disclaimer
 
