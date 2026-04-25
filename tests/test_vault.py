@@ -4,6 +4,7 @@ import core.vault
 
 # TEST CORE/VAULT
 def test_vault():
+    # REPLACE PATH WITH JSON FILE CORRESPONDING TO USER ON SETUP
     vault_file = "../data/vaults/8125ec0b20eaf79e.json"
     assert core.vault.vault(vault_file)
 
