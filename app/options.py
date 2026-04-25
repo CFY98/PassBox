@@ -6,7 +6,6 @@ from core.security import decryption, derive_app_user, encryption
 from core.utils import get_password
 from core.vault import edit_vault, vault
 
-
 # OPTIONS MENU UTILITIES
 def leave():
     return input("\nReturn to Main Menu (y/n)? ").strip().casefold() == "y"
@@ -30,6 +29,15 @@ def get_user_vault(session):
     return vault(session.vault_file)
 
 
+def get_details(session):
+    domain = get_domain()
+    username, password = user_input()
+    fzf_id = get_id(domain, session)
+    data = get_user_vault(session)
+
+    return (domain, username, password, fzf_id, data)
+
+
 def entry_exists(fzf_id, data):
     return fzf_id in data
 
@@ -39,10 +47,7 @@ def entry_not_exist():
 
 
 def overwrite_entry():
-    return (
-        input("\nThis entry already exists. Overwrite (y/n)? ").strip().casefold()
-        == "y"
-    )
+    return input("\nThis entry already exists. Overwrite (y/n)? ").strip().casefold()== "y"
 
 
 def build_entry(domain, username, password, enc_key):
@@ -56,10 +61,7 @@ def build_entry(domain, username, password, enc_key):
 # OPTIONS
 def add_entry(session):
     while True:
-        domain = get_domain()
-        username, password = user_input()
-        fzf_id = get_id(domain, session)
-        data = get_user_vault(session)
+        domain, username, password, fzf_id, data = get_details(session)
 
         if entry_exists(fzf_id, data):
             if not overwrite_entry():
@@ -91,10 +93,7 @@ def view_entries(session):
 
 def update_entry(session):
     while True:
-        domain = get_domain()
-        username, password = user_input()
-        fzf_id = get_id(domain, session)
-        data = get_user_vault(session)
+        domain, username, password, fzf_id, data = get_details(session)
 
         if not entry_exists(fzf_id, data):
             if entry_not_exist():
@@ -115,9 +114,7 @@ def update_entry(session):
 
 def delete_entry(session):
     while True:
-        domain = get_domain()
-        fzf_id = get_id(domain, session)
-        data = get_user_vault(session)
+        _, _, _, fzf_id, data = get_details(session)
 
         if entry_exists(fzf_id, data):
             data.pop(fzf_id)
