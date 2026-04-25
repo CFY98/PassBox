@@ -114,6 +114,14 @@ PassBox/
 │   └── vault.py         # Vault load and save logic
 ├── lib/
 │   └── config.py        # Path configuration
+├── tests/               # Unit tests for app and core modules
+│   ├── test_auth.py    
+│   ├── test_main.py
+│   ├── test_options.py 
+│   ├── test_passbox.py
+│   ├── test_session.py 
+│   ├── test_utils.py
+│   └── test_vault.py   
 ├── data/                # Runtime data (ignored by git)
 │   ├── credentials.csv    
 │   ├── app.salt
