@@ -11,6 +11,7 @@ def load_title():
     print()
     print(pyfiglet.figlet_format("PassBox", font="slant"))
 
+
 def load_auth():
     return Auth()
 
