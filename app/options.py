@@ -6,6 +6,7 @@ from core.security import decryption, derive_app_user, encryption
 from core.utils import get_password
 from core.vault import edit_vault, vault
 
+
 # OPTIONS MENU UTILITIES
 def leave():
     return input("\nReturn to Main Menu (y/n)? ").strip().casefold() == "y"
@@ -47,7 +48,10 @@ def entry_not_exist():
 
 
 def overwrite_entry():
-    return input("\nThis entry already exists. Overwrite (y/n)? ").strip().casefold()== "y"
+    return (
+        input("\nThis entry already exists. Overwrite (y/n)? ").strip().casefold()
+        == "y"
+    )
 
 
 def build_entry(domain, username, password, enc_key):
@@ -114,7 +118,9 @@ def update_entry(session):
 
 def delete_entry(session):
     while True:
-        _, _, _, fzf_id, data = get_details(session)
+        domain = get_domain()
+        fzf_id = get_id(domain, session)
+        data = get_user_vault(session)
 
         if entry_exists(fzf_id, data):
             data.pop(fzf_id)
