@@ -1,5 +1,5 @@
 # PASSBOX MODULES
-from core.security import (derive_enc_key, derive_hmac_key)
+from core.security import derive_enc_key, derive_hmac_key
 
 
 # USER SESSION
