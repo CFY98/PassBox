@@ -1,3 +1,8 @@
+# 🔎 Note
+This project was submitted as the final project for CS50’s Introduction to Programming with Python. The project structure was designed in accordance to the course criteria.
+
+Additionally, the documentation is intentionally detailed and verbose to clearly explain design decisions, security rationale, and implementation trade-offs as part of the learning process.
+
 # 🔐 PassBox
 
 PassBox is a CLI password manager designed to explore how secure system design and cryptographic separation of concerns. It features a hybrid model where authentication, session state, and encryption responsibilities are strictly separated.
