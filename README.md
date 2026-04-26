@@ -9,7 +9,7 @@ PassBox is a CLI password manager with a hybrid security model to explore how se
 - HMAC-based stable entry IDs for lookup, update, and removal
 - Symmetric authenticated encryption (Fernet) for vault data and app_username
 - Decryption only occurs at display time
-- Fuzzy search on hashed domain name values
+- Fzf-inspired pattern search using regex on decrypted domain name values 
 - CLI-based interface
 
 ## 💡 Security Model
