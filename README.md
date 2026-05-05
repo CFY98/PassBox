@@ -4,13 +4,12 @@ PassBox is a CLI password manager with a hybrid security model to explore how se
 
 ## 🧠 Features
 
-- Per-user encrypted vaults with unique vault files
-- Argon2id key derivation for master password
-- HMAC-based stable entry IDs for lookup, update, and removal
-- Symmetric authenticated encryption (Fernet) for vault data and app_username
-- Decryption only occurs at display time
-- Fzf-inspired pattern search using regex on decrypted domain name values 
-- CLI-based interface
+- **Hybrid Encryption Model** — Authentication, session state, and vault access strictly separated with symmetric Fernet encryption for vault data and credentials.
+- **Key Derivation** — Argon2id KDF for master password hashing with SHA256-derived encryption and HMAC signing keys.
+- **Stable Entry IDs** — HMAC-SHA256 hashed domain names for consistent lookup, update, and removal without exposing raw values.
+- **Deferred Decryption** — Vault data decrypted only at display time to minimise memory exposure.
+- **Pattern Search** — Fzf-inspired regex search across decrypted entry names for fast vault querying.
+- **CLI Interface** — Session-based design with strict separation between auth, session, and vault layers.
 
 ## 💡 Security Model
 ```
@@ -87,10 +86,11 @@ python passbox.py
 
 - The script will perform its encryption routine with user input as defined in the code.
 - For the unit tests to work, there must be at least 1 user account. Please see the recommended account when conducting tests.
-> Recommended app username: test
-> Recommended app password: test
-> Recommended domain name: test.com
-
+```
+Recommended app username: test
+Recommended app password: test
+Recommended domain name: test.com
+```
 ##  ⚠️ Disclaimer
 
 > PassBox is a learning project designed to explore cryptographic concepts and secure system design. It is **not** intended for production use or as a replacement for established password managers.
