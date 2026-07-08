@@ -11,6 +11,10 @@ PassBox is a CLI password manager with a hybrid security model to explore how se
 - **Pattern Search** — Fzf-inspired regex search across decrypted entry names for fast vault querying.
 - **CLI Interface** — Session-based design with strict separation between auth, session, and vault layers.
 
+## 🧾 Changes
+
+[Changelog](https://github.com/CFY98/PassBox/blob/main/CHANGELOG.md) 
+
 ## 💡 Security Model
 ```
 ENTROPY LAYER
@@ -88,7 +92,7 @@ python passbox.py
 
 - For the tests to work, there must be at least 1 user account. Please see the recommended settings when conducting tests.
 - The script will perform its encryption routine with user input as defined in the code.
-- In `test_vault.py` a vault file variable has been hard-coded. Replace with json file name used the one created on your machine
+- In `test_vault.py` a vault file variable has been hard-coded. Replace with json file name used with the one created on your machine
 
 ### Recommended Settings
 ```
@@ -140,6 +144,7 @@ PassBox/
 │   ├── app.salt
 │   └── vaults/
 ├── requirements.txt     # Non-built-in Python libraries
+├── pytest.ini           # Pytest configuration file
 ├── README.md            # This file
 └── LICENSE              # MIT License
 ```
