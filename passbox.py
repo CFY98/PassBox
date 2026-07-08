@@ -4,7 +4,7 @@ import pyfiglet
 
 # PASSBOX MODULES
 from core.auth import Auth
-from app.main import main
+from app.menu import menu
 
 # LOGIN HELPERS
 def load_title():
@@ -33,7 +33,7 @@ def register_hint():
 
 
 # LOGIN DAEMON
-def passbox():
+def main():
     load_title()
     auth = load_auth()
 
@@ -53,7 +53,7 @@ def passbox():
                 hint = register_hint()
                 if auth.register(username, password, hint):
                     _, session = auth.login(username, password)
-                    main(session)
+                    menu(session)
                 return
 
             elif status == "invalid_password":
@@ -76,9 +76,9 @@ def passbox():
                     continue
 
             else:
-                main(session)
+                menu(session)
                 return
 
 
 if __name__ == "__main__":
-    passbox()
+    main()

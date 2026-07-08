@@ -3,7 +3,7 @@ from .options import options_map
 
 
 # PASSBOX INTERFACE
-def menu():
+def options():
     menu = {
         "1": "Add an Entry",
         "2": "View Entries",
@@ -21,9 +21,9 @@ def answer():
     return input("\nAnswer: ").strip()
 
 
-def main(session):
+def menu(session):
     while True:
-        menu()
+        options()
         prompt = answer()
         print()
         try:
@@ -33,7 +33,3 @@ def main(session):
             options_map[prompt](session)
         except KeyError:
             print("\nPlease refer to list of options")
-
-
-if __name__ == "__main__":
-    print("Module not meant to be run directly")
