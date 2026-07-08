@@ -1,4 +1,4 @@
 .zed/
-venv3.13/
+.venv/
 __pycache__/
 data/
