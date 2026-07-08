@@ -84,8 +84,13 @@ pip install -r requirements.txt
 python passbox.py
 ```
 
+## 🧪 Tests
+
+- For the tests to work, there must be at least 1 user account. Please see the recommended settings when conducting tests.
 - The script will perform its encryption routine with user input as defined in the code.
-- For the unit tests to work, there must be at least 1 user account. Please see the recommended account when conducting tests.
+- In `test_vault.py` a vault file variable has been hard-coded. Replace with json file name used the one created on your machine
+
+### Recommended Settings
 ```
 Recommended app username: test
 Recommended app password: test
